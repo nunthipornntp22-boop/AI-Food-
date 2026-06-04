@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Food Assistant · สมุดโน้ตแนะนำมื้อทีม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fdf2cf; --paper2:#f7e3bf;
+  --grid:rgba(125,90,80,.07);
+  --card:#fffdf5; --card2:#fff3e0;
+  --ink:#7d5a50; --line:#7d5a50;
+  --text:#5e463b; --text2:#a08a7e;
+  --pink:#f3a6c6; --pinkS:#ffe6f1; --pinkD:#d96fa0;
+  --lav:#b6a3ea; --lavS:#ece2fc; --lavD:#7d63cf;
+  --yellow:#ffe1a3; --yT:#b07f23;
+  --green:#c8ecd7; --gT:#3f8c6e;
+  --rose:#dd6a98; --roseS:#ffe1ec;
+  --blue:#cfe0fb; --bT:#5a7fc0;
+  --gold:#f0bd55; --silver:#bcb0e8; --bronze:#ef9bc0;
+  --grad:linear-gradient(135deg,#fcd7e6 0%,#d9c4f5 55%,#fdeccb 100%);
+  --shadow:4px 5px 0 rgba(125,90,80,.18);
+  --shadowS:3px 3px 0 rgba(125,90,80,.14);
+}
+[data-theme="dark"]{
+  --paper:#221a36; --paper2:#2a2147;
+  --grid:rgba(200,180,245,.05);
+  --card:#322a4d; --card2:#3a3056;
+  --ink:#bda6ea; --line:#9a82d4;
+  --text:#efe7fb; --text2:#b1a3cf;
+  --pink:#e398bf; --pinkS:#3d2a45; --pinkD:#f0a6c8;
+  --lav:#bda6ea; --lavS:#322a52; --lavD:#cdb8f5;
+  --yellow:#e6c47e; --yT:#f2d597;
+  --green:#86cdac; --gT:#8fe0bb;
+  --rose:#f0a0c2; --roseS:#3a2740;
+  --blue:#9bb6e8; --bT:#a7c4f5;
+  --gold:#e8b964; --silver:#b9aef0; --bronze:#ef9bc0;
+  --grad:linear-gradient(135deg,#5b3f63 0%,#473a6e 55%,#5a4a52 100%);
+  --shadow:4px 5px 0 rgba(0,0,0,.4);
+  --shadowS:3px 3px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  color:var(--text);
+  font-family:'IBM Plex Sans Thai','Prompt',system-ui,sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(180deg,var(--paper) 0%,var(--paper2) 100%);
+  background-size:26px 26px,26px 26px,100% 100%;
+  background-attachment:fixed;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 16px 90px}
+h1,h2,h3,.disp{font-family:'Prompt','IBM Plex Sans Thai',sans-serif}
+a{color:inherit}.muted{color:var(--text2)}
+
+/* ===== generic card ===== */
+.card{background:var(--card);border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.sec{margin-top:30px}
+.sec-h{display:inline-flex;align-items:center;gap:9px;font-size:19px;font-weight:700;margin-bottom:14px;
+  background:var(--card);border:3px solid var(--line);border-radius:16px;padding:7px 16px 7px 12px;box-shadow:var(--shadowS);position:relative}
+.sec-h .ic{width:32px;height:32px;border-radius:11px;background:var(--lavS);color:var(--lavD);display:grid;place-items:center;font-size:17px;border:2px dashed var(--lav)}
+/* washi tape decoration */
+.sec-h:after{content:"";position:absolute;top:-11px;left:24px;width:46px;height:18px;
+  background:repeating-linear-gradient(45deg,var(--pink) 0 6px,var(--pinkS) 6px 12px);
+  opacity:.85;transform:rotate(-6deg);border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* ===== HERO / header ===== */
+.hero{position:relative;background:var(--grad);border:3px solid var(--line);border-radius:30px;
+  padding:30px 26px 40px;color:#5a3f55;overflow:visible;box-shadow:var(--shadow);margin-top:14px}
+[data-theme="dark"] .hero{color:#f3e9fb}
+.hero:before{content:"";position:absolute;inset:7px;border:2.5px dashed rgba(125,90,80,.4);border-radius:23px;pointer-events:none}
+[data-theme="dark"] .hero:before{border-color:rgba(220,200,250,.35)}
+/* cat ears */
+.ear{position:absolute;top:-22px;width:46px;height:46px;background:var(--grad);border:3px solid var(--line);border-radius:50% 50% 12px 50%;z-index:0}
+.ear.l{left:40px;transform:rotate(-18deg)}
+.ear.r{right:40px;transform:rotate(18deg) scaleX(-1)}
+/* scalloped bottom */
+.hero .scallop{position:absolute;left:0;right:0;bottom:-2px;height:18px;
+  background:radial-gradient(circle at 11px -2px,var(--paper) 11px,transparent 12px) repeat-x;
+  background-size:22px 18px}
+.hero .eb{font-size:12px;font-weight:700;letter-spacing:3px;opacity:.75;position:relative;z-index:1}
+.hero h1{font-size:30px;font-weight:800;margin:8px 0 6px;line-height:1.2;position:relative;z-index:1}
+.hero .sub{font-size:14.5px;font-weight:500;opacity:.85;position:relative;z-index:1;max-width:640px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;font-weight:600;margin-top:14px;position:relative;z-index:1}
+.hero .meta span.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.55);border:2px solid rgba(125,90,80,.3);padding:5px 12px;border-radius:30px}
+[data-theme="dark"] .hero .meta span.pill{background:rgba(255,255,255,.13);border-color:rgba(220,200,250,.3)}
+.ed{border-bottom:2px dashed currentColor;min-width:80px;display:inline-block;cursor:text;outline:none;font-weight:700}
+.hero .kao{position:absolute;right:28px;bottom:14px;font-size:40px;z-index:1;animation:bob 4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+
+/* ===== control panel ===== */
+.panel{padding:18px 20px;margin-top:18px}
+.panel-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:14px}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--lavS);border:2px solid var(--lav);padding:6px 13px;border-radius:30px;color:var(--lavD)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--gT);box-shadow:0 0 0 4px rgba(63,140,110,.2)}
+.ctrls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* capsule theme toggle */
+.toggle{width:74px;height:38px;border-radius:30px;border:3px solid var(--line);background:var(--yellow);
+  position:relative;cursor:pointer;transition:transform .15s,background .25s;padding:0}
+.toggle:hover{transform:scale(1.07) rotate(-2deg)}
+.toggle:active{transform:scale(.94)}
+.toggle .knob{position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;background:#fff;
+  border:2px solid var(--line);display:grid;place-items:center;font-size:14px;transition:left .28s cubic-bezier(.6,-0.4,.4,1.4)}
+[data-theme="dark"] .toggle{background:var(--lavS)}
+[data-theme="dark"] .toggle .knob{left:42px;background:var(--lav)}
+.rfbtn{display:inline-flex;align-items:center;gap:8px;font-family:'Prompt';font-weight:700;font-size:14px;
+  background:var(--pink);color:#5a3142;border:3px solid var(--line);border-radius:30px;padding:8px 18px;cursor:pointer;
+  box-shadow:var(--shadowS);transition:transform .12s}
+[data-theme="dark"] .rfbtn{color:#3a1e2b}
+.rfbtn:hover{transform:translateY(-2px) scale(1.03)}
+.rfbtn:active{transform:translateY(1px)}
+.rfbtn .ri{display:inline-block;transition:transform .5s}
+.rfbtn.spin .ri{transform:rotate(360deg)}
+
+.fl-row{margin-top:13px}
+.fl-lab{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:'Prompt';font-weight:600;font-size:13px;background:var(--card2);color:var(--text);
+  border:2.5px solid var(--line);border-radius:30px;padding:6px 14px;cursor:pointer;transition:transform .1s,background .15s}
+.chip:hover{transform:translateY(-2px)}
+.chip.active{background:var(--lav);color:#fff}
+[data-theme="dark"] .chip.active{color:#241a36}
+.chip.area.active{background:var(--pink);color:#5a3142}
+[data-theme="dark"] .chip.area.active{color:#3a1e2b}
+
+/* price slider */
+.slider-wrap{padding:4px 4px 2px;max-width:380px}
+.slider{position:relative;height:36px}
+.track{position:absolute;top:15px;left:0;right:0;height:7px;background:var(--card2);border:2px solid var(--line);border-radius:30px}
+.fill{position:absolute;top:15px;height:7px;background:var(--lav);border-radius:30px}
+.slider input[type=range]{position:absolute;top:6px;left:-2px;width:calc(100% + 4px);margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:24px;height:24px;border-radius:50%;
+  background:var(--pink);border:3px solid var(--line);cursor:grab;box-shadow:1px 1px 0 rgba(125,90,80,.25)}
+.slider input[type=range]::-moz-range-thumb{pointer-events:auto;width:22px;height:22px;border-radius:50%;
+  background:var(--pink);border:3px solid var(--line);cursor:grab}
+.slbl{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-top:6px;color:var(--lavD)}
+.fl-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;
+  border-top:2px dashed var(--line);padding-top:12px}
+.rcount{font-weight:700;font-size:14px;color:var(--rose)}
+.mini{font-family:'Prompt';font-weight:600;font-size:12.5px;background:transparent;border:2px solid var(--line);
+  border-radius:30px;padding:5px 13px;cursor:pointer;color:var(--text)}
+.sortsel{font-family:'IBM Plex Sans Thai';font-size:13px;font-weight:600;border:2.5px solid var(--line);
+  border-radius:30px;padding:6px 12px;background:var(--card);color:var(--text);cursor:pointer}
+
+/* ===== objective / workflow / tools ===== */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.box{padding:18px 20px}
+.box h3{font-size:15px;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.box p{font-size:14px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.fstep{font-size:12.5px;font-weight:700;background:var(--lavS);color:var(--lavD);border:2px solid var(--lav);
+  border-radius:14px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
+.farrow{color:var(--text2);font-weight:700}
+.toolc{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.toolc span{font-size:12.5px;font-weight:600;background:var(--card2);border:2px solid var(--line);border-radius:30px;padding:5px 12px}
+.srcs{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
+.srcs a{font-size:13px;font-weight:700;color:var(--bT);background:var(--blue);border:2px solid var(--line);
+  border-radius:14px;padding:7px 13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+
+/* ===== Top 3 podium ===== */
+.podium{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.rcard{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:18px;position:relative;
+  box-shadow:var(--shadow);transition:transform .16s cubic-bezier(.5,-0.2,.3,1.3)}
+.rcard:hover{transform:translateY(-8px) rotate(-1deg)}
+.rcard.gold{background:linear-gradient(180deg,var(--yellow),var(--card) 60%)}
+.rcard.silver{background:linear-gradient(180deg,var(--lavS),var(--card) 60%)}
+.rcard.bronze{background:linear-gradient(180deg,var(--pinkS),var(--card) 60%)}
+.medal{position:absolute;top:-15px;left:18px;width:38px;height:38px;border-radius:50%;border:3px solid var(--line);
+  display:grid;place-items:center;font-family:'Prompt';font-weight:800;font-size:17px;color:#5a3f30;box-shadow:var(--shadowS)}
+.fhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-top:8px}
+.tag{display:inline-block;font-size:11px;font-weight:700;background:var(--lavS);color:var(--lavD);border:1.5px solid var(--lav);border-radius:20px;padding:2px 9px;margin-bottom:5px}
+.rname{font-family:'Prompt';font-weight:700;font-size:16.5px;line-height:1.3}
+.ring{width:62px;height:62px;flex:none}
+.hl{display:flex;gap:7px;font-size:13px;background:var(--green);color:var(--gT);border:2px dashed var(--gT);
+  border-radius:14px;padding:8px 11px;margin:11px 0;font-weight:600}
+.st3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:11px}
+.b3{border:2px solid var(--line);border-radius:13px;padding:7px 4px;text-align:center}
+.b3 .bb{font-family:'Prompt';font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:3px}
+.b3 .ss{font-size:10.5px;opacity:.8;margin-top:1px}
+.reason{background:var(--card2);border:2px solid var(--line);border-radius:14px;padding:11px 13px}
+.reason .h{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.reason ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+.reason li{display:flex;gap:7px;font-size:13px;align-items:flex-start}
+.mapbtn{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:12px;font-family:'Prompt';font-weight:700;
+  font-size:14px;background:var(--pink);color:#5a3142;border:3px solid var(--line);border-radius:16px;padding:9px;text-decoration:none;
+  transition:transform .12s}
+[data-theme="dark"] .mapbtn{color:#3a1e2b}
+.mapbtn:hover{transform:translateY(-2px) scale(1.02)}
+
+/* ===== comparison table ===== */
+.tablecard{padding:6px;overflow:hidden}
+.tscroll{overflow-x:auto;border-radius:18px}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;font-size:13.5px;table-layout:fixed}
+table.cmp td{word-break:break-word;overflow-wrap:anywhere}
+table.cmp th{font-family:'Prompt';font-weight:700;font-size:12.5px;text-align:left;padding:12px 12px;
+  background:var(--lavS);color:var(--lavD);border-bottom:3px solid var(--line);white-space:nowrap;position:sticky;top:0}
+table.cmp td{padding:12px 12px;border-bottom:2px dashed var(--line);vertical-align:top}
+table.cmp tr:nth-child(even) td{background:var(--card2)}
+table.cmp tr:last-child td{border-bottom:none}
+table.cmp tr:hover td{background:var(--pinkS)}
+.rk{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--lav);color:#fff;font-family:'Prompt';font-weight:800;font-size:12.5px;border:2px solid var(--line)}
+[data-theme="dark"] .rk{color:#241a36}
+.tname{font-family:'Prompt';font-weight:700;font-size:14px}
+.tot{display:inline-block;font-family:'Prompt';font-weight:800;font-size:15px;color:var(--rose);
+  background:var(--roseS);border:2px solid var(--rose);border-radius:12px;padding:3px 10px}
+.pros{color:var(--gT);font-weight:600;font-size:12.5px}
+.caut .l1{font-weight:800;color:var(--rose);font-size:12px}
+.caut .l2{font-size:12.5px;color:var(--text);margin-top:2px}
+.warp{display:inline-flex;align-items:center;gap:5px;font-family:'Prompt';font-weight:700;font-size:12.5px;
+  background:var(--green);color:var(--gT);border:2.5px solid var(--line);border-radius:14px;padding:7px 11px;text-decoration:none;white-space:nowrap;transition:transform .12s}
+.warp:hover{transform:translateY(-2px) rotate(-2deg)}
+.empty{padding:30px;text-align:center;color:var(--text2);font-weight:600}
+
+/* ===== scoring mini tab ===== */
+.scoretab{margin-top:34px}
+.scbtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+  background:var(--card);border:3px dashed var(--line);border-radius:18px;padding:13px 18px;font-family:'Prompt';
+  font-weight:700;font-size:15px;color:var(--text);box-shadow:var(--shadowS)}
+.scbtn .chev{transition:transform .25s}
+.scbody{display:none;margin-top:12px;padding:18px 20px}
+.scoretab.open .scbody{display:block}
+.scoretab.open .scbtn .chev{transform:rotate(180deg)}
+.crit{display:grid;gap:9px}
+.critrow{display:flex;align-items:center;gap:12px}
+.critname{flex:none;width:170px;font-weight:700;font-size:13.5px}
+.critbar{flex:1;height:18px;background:var(--card2);border:2px solid var(--line);border-radius:30px;overflow:hidden}
+.critbar i{display:block;height:100%;background:var(--lav);border-radius:30px}
+.critw{flex:none;width:42px;text-align:right;font-family:'Prompt';font-weight:800;font-size:14px;color:var(--lavD)}
+.scnote{margin-top:14px;font-size:13px;color:var(--text2);border-top:2px dashed var(--line);padding-top:12px}
+
+/* ===== chatbot ===== */
+.cbtn{position:fixed;right:20px;bottom:20px;width:62px;height:62px;border-radius:50%;border:3px solid var(--line);
+  background:var(--pink);color:#5a3142;font-size:26px;cursor:pointer;box-shadow:var(--shadow);z-index:40;transition:transform .15s}
+[data-theme="dark"] .cbtn{color:#3a1e2b}
+.cbtn:hover{transform:scale(1.08) rotate(6deg)}
+.ctip{position:fixed;right:92px;bottom:34px;background:var(--card);border:3px solid var(--line);border-radius:16px;
+  padding:8px 13px;font-family:'Prompt';font-weight:700;font-size:13px;color:var(--text);box-shadow:var(--shadowS);
+  z-index:39;white-space:nowrap;animation:bob 4s ease-in-out infinite}
+.ctip:after{content:"";position:absolute;right:-9px;top:50%;transform:translateY(-50%);
+  border:8px solid transparent;border-left-color:var(--line)}
+@media(max-width:520px){.ctip{display:none}}
+.cpanel{position:fixed;right:20px;bottom:92px;width:340px;max-width:calc(100vw - 32px);max-height:70vh;
+  background:var(--card);border:3px solid var(--line);border-radius:22px;box-shadow:var(--shadow);z-index:40;
+  display:none;flex-direction:column;overflow:hidden}
+.cpanel.open{display:flex}
+.chead{background:var(--grad);padding:13px 16px;font-family:'Prompt';font-weight:700;font-size:15px;color:#5a3f55;
+  border-bottom:3px solid var(--line);display:flex;align-items:center;gap:8px}
+[data-theme="dark"] .chead{color:#f3e9fb}
+.cmsgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.mb{max-width:85%;padding:9px 13px;border-radius:16px;font-size:13.5px;border:2px solid var(--line)}
+.mb.bot{align-self:flex-start;background:var(--lavS);border-bottom-left-radius:4px}
+.mb.me{align-self:flex-end;background:var(--pinkS);border-bottom-right-radius:4px}
+.cquick{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 8px}
+.cquick button{font-size:11.5px;font-weight:600;background:var(--card2);border:2px solid var(--line);border-radius:30px;padding:4px 10px;cursor:pointer;color:var(--text)}
+.cinrow{display:flex;gap:8px;padding:12px;border-top:2px dashed var(--line)}
+.cinrow input{flex:1;border:2.5px solid var(--line);border-radius:30px;padding:8px 13px;font-family:'IBM Plex Sans Thai';font-size:13.5px;background:var(--card);color:var(--text);outline:none}
+.cinrow button{border:3px solid var(--line);background:var(--lav);color:#fff;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:16px}
+[data-theme="dark"] .cinrow button{color:#241a36}
+
+@media(max-width:680px){.g2{grid-template-columns:1fr}.hero h1{font-size:24px}.st3{grid-template-columns:1fr 1fr 1fr}}
+
+/* suitable-for tags (top3) */
+.suit{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.suittag{font-size:11.5px;font-weight:600;background:var(--lavS);color:var(--lavD);border:2px solid var(--lav);border-radius:20px;padding:3px 9px}
+/* top 10 cards */
+.t10grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(255px,1fr))}
+.t10card{background:var(--card);border:3px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadowS);transition:transform .14s}
+.t10card:hover{transform:translateY(-4px) rotate(-.5deg)}
+.t10top{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.subg{display:flex;flex-direction:column;gap:5px}
+.subrow{display:flex;align-items:center;gap:7px;font-size:11.5px}
+.subrow .sl{flex:none;width:15px;font-family:'Prompt';font-weight:800;color:var(--lavD)}
+.subrow .sbar{flex:1;height:9px;background:var(--card2);border:1.5px solid var(--line);border-radius:30px;overflow:hidden}
+.subrow .sbar i{display:block;height:100%;background:var(--lav);border-radius:30px}
+.subrow .sv{flex:none;width:22px;text-align:right;font-weight:700}
+/* comparison extras */
+.schips{display:flex;flex-wrap:wrap;gap:3px}
+.schip{font-size:10.5px;font-weight:700;background:var(--card2);border:1.5px solid var(--line);border-radius:8px;padding:1px 5px;color:var(--text)}
+.totmini{display:inline-block;font-size:11px;font-weight:800;color:var(--rose);margin-top:4px}
+.star{font-weight:800;color:var(--yT)}
+.rv{font-size:11px;color:var(--text2)}
+.trav{font-size:12px;line-height:1.5}
+.dirlink{color:var(--bT);font-weight:700;text-decoration:underline;white-space:nowrap}
+.hrs{font-size:12px;color:var(--text2)}
+
+/* trade-off analysis (top3) */
+.analysis{margin-top:16px}
+.analysis-card{padding:16px 18px}
+.an-h{font-family:'Prompt';font-weight:700;font-size:15px;margin-bottom:10px}
+.an-list{list-style:none;display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.an-list li{padding-left:11px;border-left:3px solid var(--lav)}
+.an-rec{margin-top:13px;border-top:2px dashed var(--line);padding-top:11px}
+.an-rec-h{font-weight:700;font-size:13px;color:var(--lavD);margin-bottom:7px}
+.an-rec ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.an-rec li{font-size:12.5px;font-weight:600;background:var(--lavS);border:2px solid var(--lav);border-radius:14px;padding:6px 11px}
+/* big single score number */
+.scorebig{font-family:'Prompt';font-weight:800;font-size:19px;color:var(--rose)}
+
+/* card highlight (top3 trade-off) */
+.cardhl{background:var(--lavS);border:2px solid var(--lav);border-radius:14px;padding:9px 12px;margin-bottom:11px;font-size:12.5px;line-height:1.55;color:var(--text)}
+.cardhl b{color:var(--lavD)}
+/* scoring criteria mini-cards */
+.critgrid{display:grid;gap:13px;grid-template-columns:repeat(6,1fr)}
+.critcard{border:3px solid var(--line);border-radius:20px;box-shadow:var(--shadowS);padding:16px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;transition:transform .14s}
+.critcard:nth-child(1){background:linear-gradient(180deg,var(--yellow),var(--card) 72%)}
+.critcard:nth-child(2){background:linear-gradient(180deg,var(--lavS),var(--card) 72%)}
+.critcard:nth-child(3){background:linear-gradient(180deg,var(--green),var(--card) 72%)}
+.critcard:nth-child(4){background:linear-gradient(180deg,var(--blue),var(--card) 72%)}
+.critcard:nth-child(5){background:linear-gradient(180deg,var(--pinkS),var(--card) 72%)}
+.critcard:nth-child(6){background:linear-gradient(180deg,var(--lavS),var(--card) 72%)}
+.critcard:hover{transform:translateY(-4px) rotate(-1deg)}
+.cc-ic{font-size:28px;line-height:1}
+.cc-name{font-family:'Prompt';font-weight:700;font-size:12.5px;line-height:1.35;min-height:34px;display:flex;align-items:center;justify-content:center}
+.cc-score{font-family:'Prompt';font-weight:800;font-size:23px;color:var(--rose);display:flex;flex-direction:column;line-height:1}
+.cc-score span{font-size:10px;font-weight:600;color:var(--text2);margin-top:3px}
+@media(max-width:760px){.critgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:430px){.critgrid{grid-template-columns:repeat(2,1fr)}}
+
+/* relocated filter bar (in comparison section) */
+.filterbar{padding:14px 16px;margin-bottom:14px}
+.fb-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px 24px;align-items:start}
+.fb-col .fl-lab{margin-bottom:7px}
+@media(max-width:680px){.fb-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. HEADER -->
+  <header class="hero">
+    <span class="ear l"></span><span class="ear r"></span>
+    <div class="eb">✦ AI FOOD ASSISTANT ✦</div>
+    <h1>สมุดโน้ตแนะนำร้านมื้อทีม 🍱</h1>
+    <div class="sub">ผู้ช่วยอัจฉริยะหาร้านอาหารสำหรับมื้อทีม 8–12 คน ใน 5 ย่านทำเลทอง — คัดจากข้อมูลจริง และให้คะแนน 100 คะแนน</div>
+    <div class="meta">
+      <span class="pill">📍 สยาม · อารีย์ · ทองหล่อ · อโศก · พร้อมพงษ์</span>
+      <span class="pill">🗓️ อัปเดต: <b id="lastUpdateTxt">—</b></span>
+      <span class="pill">✍️ ผู้จัดทำ: <span class="ed" contenteditable="true">นันทิพร</span></span>
+    </div>
+    <div class="kao" aria-label="bento mascot">
+      <svg width="84" height="78" viewBox="0 0 84 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- steam -->
+        <path d="M30 10c4-3 0-7 4-9" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+        <path d="M42 9c4-3 0-7 4-9" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+        <path d="M54 10c4-3 0-7 4-9" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+        <!-- food mound -->
+        <ellipse cx="42" cy="34" rx="27" ry="14" fill="#ffe1a3" stroke="#7d5a50" stroke-width="2.6"/>
+        <circle cx="30" cy="30" r="4.5" fill="#f3a6c6" stroke="#7d5a50" stroke-width="2"/>
+        <circle cx="52" cy="29" r="4" fill="#c8ecd7" stroke="#7d5a50" stroke-width="2"/>
+        <path d="M40 24c2-3 6-3 8 0" stroke="#7d5a50" stroke-width="2" stroke-linecap="round"/>
+        <!-- bowl -->
+        <path d="M12 38h60c0 17-13 28-30 28S12 55 12 38z" fill="#f3a6c6" stroke="#7d5a50" stroke-width="2.8"/>
+        <path d="M12 38h60" stroke="#7d5a50" stroke-width="2.8" stroke-linecap="round"/>
+        <!-- face -->
+        <circle cx="33" cy="50" r="2.3" fill="#7d5a50"/>
+        <circle cx="51" cy="50" r="2.3" fill="#7d5a50"/>
+        <path d="M38 55c2 2.4 6 2.4 8 0" stroke="#7d5a50" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <circle cx="27" cy="54" r="3" fill="#dd6a98" opacity=".55"/>
+        <circle cx="57" cy="54" r="3" fill="#dd6a98" opacity=".55"/>
+        <!-- chopsticks -->
+        <path d="M62 16L74 40M67 13L77 38" stroke="#a87b5d" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="scallop"></div>
+  </header>
+
+  <!-- 2. CONTROL PANEL -->
+  <section class="panel card">
+    <div class="panel-top">
+      <span class="live"><span class="dot"></span><span id="liveTxt">กำลังโหลด…</span> · <span id="totalBadge">— ร้าน</span></span>
+      <div class="ctrls">
+        <button class="rfbtn" id="refreshBtn"><span class="ri">🔄</span> รีเฟรชข้อมูลสด</button>
+        <button class="toggle" id="themeBtn" title="สลับโหมด"><span class="knob">☀️</span></button>
+      </div>
+    </div>
+
+    <div class="fl-row">
+      <div class="fl-lab">🏙️ เลือกย่าน</div>
+      <div class="chips" id="fArea"></div>
+    </div>
+  </section>
+
+  <!-- 3. OBJECTIVE / WORKFLOW / TOOLS -->
+  <section class="sec">
+    <div class="sec-h"><span class="ic">🎯</span> วัตถุประสงค์ · ขั้นตอน · เครื่องมือ</div>
+    <div class="grid g2">
+      <div class="box card">
+        <h3>🎯 Objective</h3>
+        <p>หาร้านอาหารที่เหมาะกับ <b>มื้อเลี้ยงทีม 8–12 คน</b> ใน 5 ย่านทำเลทองของกรุงเทพฯ โดยเก็บ <b>ข้อมูลจริง</b> จาก Google Maps + Wongnai แล้วให้คะแนนเชิงปริมาณ 100 คะแนน เพื่อจัดอันดับร้านที่คุ้มค่าและเชื่อถือได้ที่สุด</p>
+      </div>
+      <div class="box card">
+        <h3>🔄 Workflow Overview</h3>
+        <div class="flow">
+          <span class="fstep">🕷️ Apify เก็บร้าน</span><span class="farrow">→</span>
+          <span class="fstep">📊 Google Sheets</span><span class="farrow">→</span>
+          <span class="fstep">🤖 AI ทำความสะอาด+ให้คะแนน</span><span class="farrow">→</span>
+          <span class="fstep">⚙️ n8n อัตโนมัติ 7 โมง</span><span class="farrow">→</span>
+          <span class="fstep">🖥️ หน้าเว็บนี้</span>
+        </div>
+      </div>
+    </div>
+    <div class="box card" style="margin-top:14px">
+      <h3>🛠️ Tools &amp; Data Sources</h3>
+      <div class="toolc" style="margin-top:6px">
+        <span>🕷️ Apify</span><span>📊 Google Sheets</span><span>⚙️ n8n</span><span>🤖 Gemini 2.5</span><span>💬 Claude</span><span>🍽️ Wongnai</span><span>📍 Google Maps</span>
+      </div>
+      <h3 style="margin-top:14px">🔗 Data Sources (ข้อมูลจริง · อย่างน้อย 2 แหล่ง)</h3>
+      <div class="srcs">
+        <a href="https://www.google.com/maps/search/ร้านอาหาร+สยาม" target="_blank">📍 Google Maps</a>
+        <a href="https://www.wongnai.com/restaurants?q.keyword=สยาม" target="_blank">🍴 Wongnai</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.5 SCORING CRITERIA (mini cards) -->
+  <section class="sec">
+    <div class="sec-h"><span class="ic">📐</span> เกณฑ์การให้คะแนน 100 คะแนน</div>
+    <div class="critgrid">
+      <div class="critcard"><div class="cc-ic">⭐</div><div class="cc-name">คุณภาพรีวิว &amp; เรตติ้ง</div><div class="cc-score">25<span>คะแนน</span></div></div>
+      <div class="critcard"><div class="cc-ic">👥</div><div class="cc-name">ความเหมาะกับกลุ่ม</div><div class="cc-score">20<span>คะแนน</span></div></div>
+      <div class="critcard"><div class="cc-ic">💰</div><div class="cc-name">ความคุ้มค่าของราคา</div><div class="cc-score">15<span>คะแนน</span></div></div>
+      <div class="critcard"><div class="cc-ic">🚇</div><div class="cc-name">ความสะดวกเดินทาง</div><div class="cc-score">15<span>คะแนน</span></div></div>
+      <div class="critcard"><div class="cc-ic">📋</div><div class="cc-name">ความครบถ้วนของข้อมูล</div><div class="cc-score">15<span>คะแนน</span></div></div>
+      <div class="critcard"><div class="cc-ic">✨</div><div class="cc-name">ความโดดเด่นเฉพาะตัว</div><div class="cc-score">10<span>คะแนน</span></div></div>
+    </div>
+  </section>
+
+  <!-- 4. TOP 3 -->
+  <section class="sec">
+    <div class="sec-h"><span class="ic">🏆</span> Top 3 ร้านแนะนำ <span class="muted" style="font-weight:600;font-size:13px">· <span id="t3Area">ทั้งหมด</span></span></div>
+    <div class="podium" id="podium"></div>
+    <div class="analysis" id="analysis"></div>
+  </section>
+
+  <!-- 5. TOP 10 (per area) -->
+  <section class="sec">
+    <div class="sec-h"><span class="ic">🏅</span> Top 10 ร้านยอดเยี่ยม <span class="muted" style="font-weight:600;font-size:13px">· <span id="t10Area">สยาม</span></span></div>
+    <div class="card tablecard">
+      <div class="tscroll">
+        <table class="cmp">
+          <colgroup><col style="width:6%"><col style="width:26%"><col style="width:16%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"></colgroup>
+          <thead><tr><th>#</th><th>ร้าน</th><th>ประเภท</th><th>฿/คน</th><th>รีวิว</th><th>⭐ ดาว</th><th>SCORE</th><th>📍 แผนที่</th></tr></thead>
+          <tbody id="t10"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. COMPARISON TABLE (per area) -->
+  <section class="sec">
+    <div class="sec-h"><span class="ic">📋</span> เปรียบเทียบร้านเด่น <span class="muted" style="font-weight:600;font-size:13px">· <span id="cmpArea">สยาม</span></span></div>
+    <div class="card filterbar">
+      <div class="fb-grid">
+        <div class="fb-col">
+          <div class="fl-lab">🍜 ประเภทอาหาร (กรองเฉพาะตารางนี้)</div>
+          <div class="chips" id="fFood"></div>
+        </div>
+        <div class="fb-col">
+          <div class="fl-lab">💰 งบต่อหัว (บาท/คน)</div>
+          <div class="slider-wrap">
+            <div class="slider">
+              <div class="track"></div><div class="fill" id="prFill"></div>
+              <input type="range" id="prMin"><input type="range" id="prMax">
+            </div>
+            <div class="slbl"><span id="prMinLbl">฿0</span><span id="prMaxLbl">฿0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="fl-actions">
+        <span class="rcount" id="rcount">— ร้าน</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="sortsel" id="sortSel">
+            <option value="score">เรียง: คะแนนรวม</option>
+            <option value="rating">เรตติ้งสูงสุด</option>
+            <option value="reviews">รีวิวเยอะสุด</option>
+            <option value="price-low">ราคาถูก→แพง</option>
+            <option value="price-high">ราคาแพง→ถูก</option>
+          </select>
+          <button class="mini" onclick="resetF()">↺ ล้างตัวกรอง</button>
+        </div>
+      </div>
+    </div>
+    <div class="card tablecard">
+      <div class="tscroll">
+        <table class="cmp">
+          <colgroup>
+            <col style="width:17%"><col style="width:11%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:16%"><col style="width:14%"><col style="width:8%">
+          </colgroup>
+          <thead><tr>
+            <th>ร้าน</th><th>ประเภท</th><th>ย่าน</th><th>⭐ ดาว</th><th>คะแนน</th><th>฿/หัว</th><th>🚆 การเดินทาง</th><th>🕒 เวลาเปิด-ปิด</th><th>📍 แผนที่</th>
+          </tr></thead>
+          <tbody id="cmp"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<!-- chatbot -->
+<div class="ctip" id="ctip">💬 สอบถามกับผู้ช่วย AI</div>
+<button class="cbtn" id="cbtn" title="สอบถามกับผู้ช่วย AI" aria-label="สอบถามกับผู้ช่วย AI">
+  <svg viewBox="0 0 48 48" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- chef hat -->
+    <path d="M15 13a5.5 5.5 0 1 1 3.3-9.4 5.5 5.5 0 0 1 10.9 0A5.5 5.5 0 1 1 33 13z" fill="#fff" stroke="#5a3142" stroke-width="2.2"/>
+    <rect x="17" y="12" width="14" height="4.5" rx="2" fill="#fff" stroke="#5a3142" stroke-width="2.2"/>
+    <!-- head -->
+    <circle cx="24" cy="22" r="7.6" fill="#ffe9d6" stroke="#5a3142" stroke-width="2.2"/>
+    <circle cx="21.3" cy="22" r="1.2" fill="#5a3142"/>
+    <circle cx="26.7" cy="22" r="1.2" fill="#5a3142"/>
+    <path d="M22.3 24.6c1 1 2.4 1 3.4 0" stroke="#5a3142" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="19.4" cy="23.6" r="1.3" fill="#f08bb0" opacity=".75"/>
+    <circle cx="28.6" cy="23.6" r="1.3" fill="#f08bb0" opacity=".75"/>
+    <!-- body/arms -->
+    <path d="M13 41c0-7 5-10.5 11-10.5S35 34 35 41z" fill="#c8b4f0" stroke="#5a3142" stroke-width="2.2"/>
+    <!-- plate with food -->
+    <ellipse cx="24" cy="41.5" rx="13" ry="3.6" fill="#fff" stroke="#5a3142" stroke-width="2.2"/>
+    <path d="M14 41c0-4.4 4.5-7 10-7s10 2.6 10 7z" fill="#ffd98a" stroke="#5a3142" stroke-width="2.2"/>
+    <circle cx="24" cy="37.5" r="1.8" fill="#dd6a98"/>
+  </svg>
+</button>
+<div class="cpanel" id="cpanel">
+  <div class="chead">🤖 ผู้ช่วยร้านอาหาร <span style="margin-left:auto;cursor:pointer" onclick="document.getElementById('cpanel').classList.remove('open')">✕</span></div>
+  <div class="cmsgs" id="cmsgs"><div class="mb bot">สวัสดีค่ะ! ถามได้เลยว่าอยากกินอะไร ย่านไหน งบเท่าไหร่ เดี๋ยวช่วยแนะนำให้ 🎀</div></div>
+  <div class="cquick">
+    <button onclick="ask('แนะนำร้านเลี้ยงทีม 10 คน ย่านสยาม')">เลี้ยงทีม 10 คน สยาม</button>
+    <button onclick="ask('ร้านปิ้งย่างทองหล่อ งบ 500')">ปิ้งย่างทองหล่อ ฿500</button>
+    <button onclick="ask('ร้านไทยรีวิวดีที่สุด')">ไทยรีวิวดีสุด</button>
+  </div>
+  <div class="cinrow"><input id="cin" placeholder="พิมพ์คำถาม…" onkeydown="if(event.key==='Enter')send()"><button onclick="send()">➤</button></div>
+</div>
+
+<script>
+const DATA_URL="https://n8n-external.exservice.io/webhook/get-restaurants";
+const CHAT_URL="https://n8n-external.exservice.io/webhook/food-chat";
+const AREAS=["สยาม","อารีย์","ทองหล่อ","อโศก","พร้อมพงษ์"];
+const AREA_ICON={"สยาม":"🛍️","อารีย์":"🌳","ทองหล่อ":"🍸","อโศก":"🏙️","พร้อมพงษ์":"🍱"};
+let ALL=[], FILT={area:'สยาม',food:'ทั้งหมด',min:0,max:0}, GMIN=0, GMAX=2000;
+
+/* ===== SNAPSHOT (fallback) — ข้อมูลจริงจาก Apify/Google Maps ===== */
+const SNAP = [{"n": "เคนชิน อิซากายะ สาขาอโศก", "a": "อโศก", "f": "ร้านอาหารอิซาคายะ", "g": 4.3, "c": 1693, "p": "฿400-600", "d": 15}, {"n": "ปิง หูฉลาม อโศก", "a": "อโศก", "f": "ภัตตาคารอาหารจีน", "g": 4.6, "c": 1587, "p": "฿1,000+", "d": 15}, {"n": "เสวย เทอร์มินอล 21 อโศก", "a": "อโศก", "f": "ภัตตาคารอาหารทะเล", "g": 4.6, "c": 3616, "p": "฿200-1,200", "d": 15}, {"n": "โรซาโน อิตาเลียน คูซีน", "a": "อโศก", "f": "ร้านอาหารอิตาเลียน", "g": 4.5, "c": 1137, "p": "฿1,000+", "d": 15}, {"n": "Tamaruya Honten Asoke", "a": "อโศก", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 269, "p": "฿400-1,600", "d": 15}, {"n": "isung (아이성)", "a": "อโศก", "f": "ร้านบะหมี่จัมปง", "g": 4.8, "c": 987, "p": "฿200-400", "d": 15}, {"n": "LIB STORY Thai BBQ & Local Food", "a": "อโศก", "f": "ร้านอาหาร", "g": 4.7, "c": 361, "p": "฿200-1,000", "d": 15}, {"n": "อีท แอม อา อาคาร 253 อโศก", "a": "อโศก", "f": "ร้านสเต็ก", "g": 4.5, "c": 1441, "p": "฿200-400", "d": 15}, {"n": "บิ๊ก มาม่า อาหารอิตาเลียน", "a": "อโศก", "f": "ร้านอาหารอิตาเลียน", "g": 4.5, "c": 3392, "p": "฿200-1,000", "d": 15}, {"n": "สมยงตำซั่ว สุขุมวิท-อโศก", "a": "อโศก", "f": "ภัตตาคารอาหารไทย", "g": 4.7, "c": 750, "p": "฿1-400", "d": 15}, {"n": "เดอะ โลคอล", "a": "อโศก", "f": "ภัตตาคารอาหารไทย", "g": 4.4, "c": 3279, "p": "฿600-1,800", "d": 15}, {"n": "ร้านคานิเทงโกคุ สาขาอโศก", "a": "อโศก", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.9, "c": 387, "p": "฿2,000+", "d": 15}, {"n": "Thai Thai Boat Noodles Terminal 21 Asok", "a": "อโศก", "f": "ร้านก๋วยเตี๋ยว", "g": 4.5, "c": 625, "p": "฿200-400", "d": 15}, {"n": "Kuay Jub Asoke", "a": "อโศก", "f": "ภัตตาคารอาหารไทย", "g": 4.7, "c": 18, "p": "฿1-100", "d": 15}, {"n": "ปาล่า พิซซ่า โรมานา", "a": "อโศก", "f": "ร้านพิซซ่า", "g": 4.5, "c": 4495, "p": "฿200-600", "d": 15}, {"n": "Jones' Salad สาขา เทอร์มินอล 21 อโศก", "a": "อโศก", "f": "ร้านอาหารสุขภาพ", "g": 4.7, "c": 131, "p": "฿200-400", "d": 15}, {"n": "Indulge Restaurant & Cocktail Bar", "a": "อโศก", "f": "ภัตตาคารอาหารไทย", "g": 4.7, "c": 3689, "p": "฿400-1,400", "d": 15}, {"n": "กับข้าว กับปลา เทอร์มินัล 21 อโศก", "a": "อโศก", "f": "ภัตตาคารอาหารไทย", "g": 4.1, "c": 671, "p": "฿400-1,200", "d": 15}, {"n": "ทงคัตสึ วาโก สาขา เทอร์มินอล 21 อโศก", "a": "อโศก", "f": "ภัตตาคารอาหารทงคัทสึ", "g": 4.4, "c": 446, "p": "฿400-600", "d": 15}, {"n": "ครัวเจียงใหม่ - ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.8, "c": 2745, "p": "฿200-400", "d": 15}, {"n": "Supanniga Eating Room ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.4, "c": 1727, "p": "฿400-1,600", "d": 15}, {"n": "บ้านไอซ์ สาขา ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.6, "c": 1960, "p": "฿200-1,000", "d": 15}, {"n": "Kiani Korean Restaurant Thonglor", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารเกาหลี", "g": 4.8, "c": 1264, "p": "฿200-400", "d": 15}, {"n": "กุ๊ก ฝ้า หยู่น", "a": "ทองหล่อ", "f": "ร้านบะหมี่จีน", "g": 4.7, "c": 1198, "p": "฿200-400", "d": 15}, {"n": "คั่วกลิ้ง ผักสด ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.5, "c": 1508, "p": "฿400-1,200", "d": 15}, {"n": "SEE FAH (สีฟ้า) - Thonglor", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.4, "c": 512, "p": "฿200-400", "d": 15}, {"n": "เปย์ ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านอาหาร", "g": 5.0, "c": 34, "p": "", "d": 13}, {"n": "Shoutaian 2nd Rich", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.8, "c": 733, "p": "฿2,000+", "d": 15}, {"n": "ข้าวจ้าว ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.2, "c": 649, "p": "฿1-400", "d": 15}, {"n": "โคซิแร อาหารเกาหลี", "a": "ทองหล่อ", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.4, "c": 2738, "p": "฿200-400", "d": 15}, {"n": "ซูรุอุด้ง ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านอาหาร", "g": 4.5, "c": 793, "p": "฿200-400", "d": 15}, {"n": "คิตะโอจิ ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารญี่ปุ่นดั้งเดิม", "g": 4.5, "c": 416, "p": "฿2,000+", "d": 15}, {"n": "บะหมี่คนแซ่ลี ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านก๋วยเตี๋ยว", "g": 4.4, "c": 2534, "p": "฿1-200", "d": 15}, {"n": "ROAST coffee & eatery", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.5, "c": 2802, "p": "฿200-1,000", "d": 15}, {"n": "Jolly porkii มาร์เช่ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.9, "c": 38, "p": "฿1-200", "d": 15}, {"n": "R-HAAN ทองหล่อ", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารไทย", "g": 4.3, "c": 1036, "p": "฿2,000+", "d": 15}, {"n": "ทองหล่อโภชนา", "a": "ทองหล่อ", "f": "ร้านอาหาร", "g": 4.1, "c": 313, "p": "฿1-200", "d": 15}, {"n": "Took Lae Dee Thonglor", "a": "ทองหล่อ", "f": "ร้านอาหารขนาดเล็กแบบอเมริกัน", "g": 4.4, "c": 397, "p": "฿1-200", "d": 15}, {"n": "NICO NICO - Café & Brunch Place", "a": "ทองหล่อ", "f": "ภัตตาคารอาหารเช้าและกลางวัน", "g": 4.5, "c": 424, "p": "฿200-400", "d": 15}, {"n": "จากึมซอง สยามสแควร์ วัน", "a": "สยาม", "f": "ภัตตาคารอาหารเกาหลี", "g": 4.9, "c": 3473, "p": "฿200-400", "d": 15}, {"n": "ต้นโอ๊ก", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.5, "c": 305, "p": "฿1-200", "d": 15}, {"n": "White Flower Factory - ครัวดอกไม้ขาว", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.6, "c": 1521, "p": "฿400-600", "d": 15}, {"n": "Kogoro Katsu - Siam Square", "a": "สยาม", "f": "ภัตตาคารอาหารทงคัทสึ", "g": 4.6, "c": 666, "p": "฿200-400", "d": 15}, {"n": "Piranya@Siam (ปิรันย่า@สยาม)", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.8, "c": 1462, "p": "฿1-200", "d": 15}, {"n": "The Tongkeun-Gui Korean BBQ", "a": "สยาม", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.5, "c": 715, "p": "฿400-1,000", "d": 15}, {"n": "Inter Restaurant since 1981", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.4, "c": 3027, "p": "฿200-400", "d": 15}, {"n": "Metro Square SiamParagon", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.7, "c": 891, "p": "฿200-600", "d": 15}, {"n": "โค-ร-ต KORATA (Siam Square)", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.9, "c": 2529, "p": "฿200-600", "d": 15}, {"n": "เสือโหย ท่าสยาม", "a": "สยาม", "f": "ร้านก๋วยเตี๋ยว", "g": 4.9, "c": 2067, "p": "฿1-200", "d": 15}, {"n": "โม โม พาราไดซ์ สยามเซ็นเตอร์", "a": "สยาม", "f": "ร้านอาหารชาบูชาบู", "g": 4.9, "c": 1589, "p": "฿600-800", "d": 15}, {"n": "ส้มตำนัว สยาม", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.3, "c": 3459, "p": "฿200-400", "d": 15}, {"n": "โอ้กะจู๋ สาขาสยามสแควร์วัน", "a": "สยาม", "f": "ร้านอาหาร", "g": 4.4, "c": 1588, "p": "฿400-600", "d": 15}, {"n": "Miss Siam Restaurant", "a": "สยาม", "f": "ร้านอาหาร", "g": 4.7, "c": 49, "p": "฿1,000-1,200", "d": 15}, {"n": "บ้านหญิง สยามเซ็นเตอร์", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.5, "c": 997, "p": "฿200-400", "d": 15}, {"n": "บ้านไอซ์ สยามพารากอน", "a": "สยาม", "f": "ภัตตาคารอาหารไทย", "g": 4.9, "c": 2886, "p": "฿200-1,000", "d": 15}, {"n": "SUSHI SEKI (Siam Paragon)", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.8, "c": 2269, "p": "฿400-1,400", "d": 15}, {"n": "KIN DONBURI สยามสแควร์วัน", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 73, "p": "฿400-1,000", "d": 15}, {"n": "MASA GARDEN by SUKI MASA", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 442, "p": "฿600-1,400", "d": 15}, {"n": "อรรถรส", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารไทย", "g": 4.4, "c": 1158, "p": "฿400-1,200", "d": 15}, {"n": "Khao yiphun", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.4, "c": 187, "p": "฿1-200", "d": 15}, {"n": "ข้าวหน้าปลาไหล นารุเสะ พร้อมพงษ์", "a": "พร้อมพงษ์", "f": "ร้านอาหารอูนาหงิ", "g": 4.7, "c": 62, "p": "฿600-800", "d": 15}, {"n": "Ryoku Cafe", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.7, "c": 2573, "p": "฿200-400", "d": 15}, {"n": "ร้านอาหารญี่ปุ่น โดรายะ", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.8, "c": 304, "p": "฿600-800", "d": 15}, {"n": "Tsuru Udon Phrom Phong 39", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.8, "c": 130, "p": "฿200-400", "d": 15}, {"n": "DonDon พร้อมพงษ์", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.4, "c": 620, "p": "฿200-400", "d": 15}, {"n": "Jarunee", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารไทย", "g": 4.3, "c": 457, "p": "฿1-200", "d": 15}, {"n": "KURATHAI SHOKUDO", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารบุฟเฟต์", "g": 4.8, "c": 2025, "p": "฿200-400", "d": 15}, {"n": "BORNGA THAILAND", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างเกาหลี", "g": 4.8, "c": 4135, "p": "฿400-1,200", "d": 15}, {"n": "คิทเช่น นีงาตะ", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.4, "c": 860, "p": "฿200-400", "d": 15}, {"n": "เถียงนา เวียนนัวเซอรี", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.6, "c": 791, "p": "฿200-400", "d": 15}, {"n": "Xiong Lao Han Malatang สุขุมวิท39", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.9, "c": 68, "p": "฿200-400", "d": 15}, {"n": "ศรีตราด", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารไทย", "g": 4.5, "c": 2542, "p": "฿400-1,400", "d": 15}, {"n": "โคเบะทนเทกิ พร้อมพงษ์", "a": "พร้อมพงษ์", "f": "ร้านอาหารตะวันตกสไตล์ญี่ปุ่น", "g": 4.6, "c": 1925, "p": "฿200-400", "d": 15}, {"n": "โกจิคิทเช่น + บาร์", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.6, "c": 4635, "p": "฿2,000+", "d": 15}, {"n": "GaGa Udon House", "a": "พร้อมพงษ์", "f": "ร้านบะหมี่อุด้ง", "g": 4.8, "c": 1604, "p": "฿200-400", "d": 15}, {"n": "ร้านบุญตงกี่ เอ็มควอเทียร์", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.8, "c": 3211, "p": "฿200-400", "d": 15}, {"n": "นิคุโช", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.8, "c": 8500, "p": "฿400-1,400", "d": 15}, {"n": "เล ลาว - ร้านส้มตำรางวัลมิชลิน", "a": "อารีย์", "f": "ภัตตาคารอาหารไทย", "g": 4.5, "c": 2453, "p": "฿400-600", "d": 15}, {"n": "อองตองข้าวซอย สาขา อารีย์", "a": "อารีย์", "f": "ภัตตาคารอาหารไทย", "g": 4.3, "c": 1856, "p": "฿200-400", "d": 15}, {"n": "Karimaki", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.8, "c": 600, "p": "฿200-400", "d": 15}, {"n": "บ้านพึงชม", "a": "อารีย์", "f": "ภัตตาคารอาหารไทย", "g": 4.2, "c": 1625, "p": "฿200-400", "d": 15}, {"n": "โซซาคุ อารีย์", "a": "อารีย์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 1119, "p": "฿600-1,800", "d": 15}, {"n": "ก๋วยเตี๋ยว 1000 เส้น", "a": "อารีย์", "f": "ร้านก๋วยเตี๋ยว", "g": 4.0, "c": 369, "p": "฿100-200", "d": 15}, {"n": "เซนิกุเทน อารีย์", "a": "อารีย์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 1512, "p": "฿800-1,000", "d": 15}, {"n": "อร่อย อารีย์ Aroi Ari", "a": "อารีย์", "f": "ภัตตาคารอาหารไทย", "g": 4.6, "c": 129, "p": "฿1-200", "d": 15}, {"n": "Brooks brunch & bar Ari", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.8, "c": 1772, "p": "฿400-1,000", "d": 15}, {"n": "โกปี๊ฮับ ไพรม์ อารีย์", "a": "อารีย์", "f": "ภัตตาคารอาหารติ่มซำ", "g": 4.8, "c": 3431, "p": "฿200-400", "d": 15}, {"n": "ครัวแม่ปัญญา", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.4, "c": 262, "p": "฿200-400", "d": 15}, {"n": "แซ่บสุดใจ อารีย์", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.8, "c": 160, "p": "฿200-400", "d": 15}, {"n": "Kinroll - Ari", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.8, "c": 397, "p": "฿1,000+", "d": 15}, {"n": "Fishmonger Ari", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.4, "c": 1015, "p": "฿400-600", "d": 15}, {"n": "ฮานะเซน", "a": "อารีย์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 623, "p": "฿1,000+", "d": 15}, {"n": "ข้าวเหนียว อารีย์", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.6, "c": 295, "p": "฿400-600", "d": 15}, {"n": "โอฮาชิ บูตะดง", "a": "อารีย์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 721, "p": "฿200-400", "d": 15}, {"n": "Paknang.bkk ปากนัง อาหารใต้", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.8, "c": 1340, "p": "฿400-600", "d": 15}, {"n": "ONZON Esarn Restaurant Ari", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.9, "c": 188, "p": "฿200-1,000", "d": 15}, {"n": "บ้านน้ำดอกไม้ คาเฟ่ขนมไทย อารีย์", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.9, "c": 127, "p": "฿100-200", "d": 15}, {"n": "GATTA CAfe Siam Square One", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.8, "c": 701, "p": "฿1-200", "d": 15}, {"n": "The Summer Coffee Siam Paragon", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.7, "c": 374, "p": "฿1-200", "d": 15}, {"n": "The Cassette Coffee Bar", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.2, "c": 314, "p": "฿1-200", "d": 15}, {"n": "Once Cafe & Cuisine", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.2, "c": 126, "p": "฿200-300", "d": 15}, {"n": "สยาม เจริญนคร คาเฟ่", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.7, "c": 791, "p": "฿200-400", "d": 15}, {"n": "Everyday and Friends Siam Square Soi 3", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.5, "c": 139, "p": "฿200-400", "d": 15}, {"n": "Brave Roasters Siam Discovery", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.4, "c": 514, "p": "฿200-400", "d": 15}, {"n": "One Fine Day Café", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.9, "c": 28, "p": "฿1-200", "d": 15}, {"n": "KOF Siam Paragon", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.7, "c": 78, "p": "฿1-200", "d": 15}, {"n": "Café Amazon สยามสแควร์วัน", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.3, "c": 191, "p": "฿1-200", "d": 15}, {"n": "FIRE TIGER Coffee Siam Square", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.0, "c": 521, "p": "฿1-200", "d": 15}, {"n": "stof.coffee SiamSquare1", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.7, "c": 54, "p": "฿1-200", "d": 15}, {"n": "แกลลอรี่ กาแฟดริป", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.6, "c": 943, "p": "฿1-200", "d": 15}, {"n": "TrueCoffee true alpha hub", "a": "สยาม", "f": "ร้านกาแฟ", "g": 4.1, "c": 203, "p": "฿100-200", "d": 15}, {"n": "Hongdae", "a": "สยาม", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.8, "c": 5846, "p": "฿400-600", "d": 15}, {"n": "Yuk-Do ยุกโด สยามสเคป", "a": "สยาม", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.8, "c": 1630, "p": "฿400-600", "d": 15}, {"n": "Nice Two Meat U", "a": "สยาม", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 3.9, "c": 818, "p": "฿1,000+", "d": 15}, {"n": "กิวคาขุ สยามสแควร์", "a": "สยาม", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.4, "c": 392, "p": "฿200-1,000", "d": 15}, {"n": "Yakiniku Like Siam Center", "a": "สยาม", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.9, "c": 57, "p": "฿200-400", "d": 15}, {"n": "พัลแซก สยามเซ็นเตอร์", "a": "สยาม", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.2, "c": 215, "p": "฿400-600", "d": 15}, {"n": "MAGURO Siam Square One", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.7, "c": 1194, "p": "฿400-1,200", "d": 15}, {"n": "Kouen Sushi Bar Siam Square 1", "a": "สยาม", "f": "ร้านซูชิ", "g": 4.2, "c": 1663, "p": "฿400-1,000", "d": 15}, {"n": "AKIYOSHI Siam Square One", "a": "สยาม", "f": "ร้านสุกี้ยากี้และชาบูชาบู", "g": 4.3, "c": 647, "p": "฿800-1,000", "d": 15}, {"n": "Shinkanzen Sushi สยามสแควร์", "a": "สยาม", "f": "ร้านซูชิ", "g": 4.0, "c": 853, "p": "฿200-400", "d": 15}, {"n": "Tonkotsu Kazan Ramen Siam Center", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.8, "c": 1902, "p": "฿200-400", "d": 15}, {"n": "KOFUKU Centerpoint Siam Square", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.8, "c": 1328, "p": "฿200-400", "d": 15}, {"n": "Fumi Japanese Cuisine Siam Paragon", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.2, "c": 136, "p": "฿400-600", "d": 15}, {"n": "SEKI OMAKASE Siam Paragon", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.9, "c": 1439, "p": "฿600-1,400", "d": 15}, {"n": "Hikiniku to come Siam Paragon", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.7, "c": 58, "p": "฿600-800", "d": 15}, {"n": "On roll nori สยาม พารากอน", "a": "สยาม", "f": "อาหารญี่ปุ่น", "g": 4.9, "c": 442, "p": "฿600-1,800", "d": 15}, {"n": "The Grill Tokyo", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.4, "c": 239, "p": "฿2,000+", "d": 15}, {"n": "NAEKI SUSHI BTS SIAM", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 127, "p": "฿1-200", "d": 15}, {"n": "อาโออิ สยามพารากอน", "a": "สยาม", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.4, "c": 375, "p": "฿800-1,600", "d": 15}, {"n": "Nabezo Premium Siam Paragon", "a": "สยาม", "f": "ร้านอาหารชาบูชาบู", "g": 4.9, "c": 457, "p": "฿1,000+", "d": 15}, {"n": "Wisdom International Buffet Siam Paragon", "a": "สยาม", "f": "ภัตตาคารอาหารบุฟเฟต์", "g": 4.3, "c": 1244, "p": "฿800-1,600", "d": 15}, {"n": "SUSHIRO Siam Paragon", "a": "สยาม", "f": "ร้านอาหารซูชิบนสายพาน", "g": 4.4, "c": 582, "p": "฿200-600", "d": 15}, {"n": "นานา คอฟฟี่ โรสเตอร์ อารีย์", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.4, "c": 2827, "p": "฿200-400", "d": 15}, {"n": "Laliart Coffee ลิลู ละเลียด", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.6, "c": 415, "p": "฿200-400", "d": 15}, {"n": "BAY Aree", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.3, "c": 559, "p": "฿200-400", "d": 15}, {"n": "ARI ME MEOW", "a": "อารีย์", "f": "คาเฟ่ศิลปะ", "g": 5.0, "c": 55, "p": "฿1-200", "d": 15}, {"n": "Poet House Cafe", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.3, "c": 508, "p": "฿200-400", "d": 15}, {"n": "Porcupine Cafe", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.3, "c": 591, "p": "฿1-200", "d": 15}, {"n": "Aribica", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.6, "c": 267, "p": "฿1-200", "d": 15}, {"n": "1:2 coffee Ari", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.5, "c": 99, "p": "฿1-200", "d": 15}, {"n": "KURA Cafe", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 5.0, "c": 35, "p": "฿1-200", "d": 15}, {"n": "Coffee no.9", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.6, "c": 345, "p": "฿1-200", "d": 15}, {"n": "CHERIE PATISSERIE อารีย์", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 5.0, "c": 36, "p": "฿100-200", "d": 15}, {"n": "Bar Storia del Caffè", "a": "อารีย์", "f": "ภัตตาคารอาหารยุโรปสมัยใหม่", "g": 4.2, "c": 716, "p": "฿200-800", "d": 15}, {"n": "Bedtime cafe & Coffee", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.8, "c": 176, "p": "฿1-200", "d": 15}, {"n": "Black Cat Cafe", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.7, "c": 84, "p": "฿1-200", "d": 15}, {"n": "Thongyoy Cafe ทองย้อย คาเฟ่", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.1, "c": 371, "p": "฿1-200", "d": 15}, {"n": "OIKOS Brunch & Bar", "a": "อารีย์", "f": "ร้านอาหาร", "g": 4.3, "c": 281, "p": "฿200-600", "d": 15}, {"n": "Brewlab Cafe Ari", "a": "อารีย์", "f": "ร้านกาแฟ", "g": 4.8, "c": 219, "p": "฿1-200", "d": 15}, {"n": "ร้านอาหารญี่ปุ่น โดรายะ อารีย์", "a": "อารีย์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.8, "c": 304, "p": "฿600-800", "d": 15}, {"n": "Voiij coffee and stuff", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 311, "p": "฿1-200", "d": 15}, {"n": "Craftspace", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 79, "p": "฿1-200", "d": 15}, {"n": "H CAFE & TEA Thonglor", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 185, "p": "฿200-400", "d": 15}, {"n": "BENKOFF", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.5, "c": 378, "p": "฿1-200", "d": 15}, {"n": "LOCAL BOYS COFFEE CO THONGLOR", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.9, "c": 102, "p": "฿1-200", "d": 15}, {"n": "Café Craft by CHANINTR", "a": "ทองหล่อ", "f": "ร้านอาหาร", "g": 4.1, "c": 238, "p": "฿200-800", "d": 15}, {"n": "FIRST AID KISS CAFE Thonglor", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 327, "p": "฿600-800", "d": 15}, {"n": "BEANS Coffee Roaster Thonglor", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 517, "p": "฿1-200", "d": 15}, {"n": "พาคามาร่า คอฟฟี่ ทองหล่อ 25", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.5, "c": 602, "p": "฿1-200", "d": 15}, {"n": "ไรส์ คอฟฟี่ ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 1423, "p": "฿1-200", "d": 15}, {"n": "Tiny Cup Cafe", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.4, "c": 483, "p": "฿200-1,000", "d": 15}, {"n": "101 & Co Coffee Station 8 Thonglor", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.9, "c": 314, "p": "฿1-200", "d": 15}, {"n": "The Blooming Gallery", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.2, "c": 475, "p": "฿1-1,000", "d": 15}, {"n": "PrismZ Cafe by Benzthonglor", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.9, "c": 155, "p": "฿200-400", "d": 15}, {"n": "รูทส์ แอท เดอะคอมมอนส์", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.5, "c": 659, "p": "฿1-200", "d": 15}, {"n": "Lucca Thonglor Mediterranean", "a": "ทองหล่อ", "f": "ร้านอาหาร", "g": 4.9, "c": 822, "p": "฿200-600", "d": 15}, {"n": "WATERWORKS COFFEE", "a": "ทองหล่อ", "f": "ร้านกาแฟ", "g": 4.8, "c": 206, "p": "฿200-400", "d": 15}, {"n": "ยากินิคุ โอนิคคุ โตะ โกฮัง ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.7, "c": 423, "p": "฿600-1,600", "d": 15}, {"n": "ซูมิเทอิ ยากินิคุ", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.6, "c": 432, "p": "฿2,000+", "d": 15}, {"n": "กิวมะ", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.6, "c": 1384, "p": "฿400-600", "d": 15}, {"n": "Ikkyu yakiniku", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.7, "c": 452, "p": "฿400-1,400", "d": 15}, {"n": "YAKINIKU MASTER SHOUTAIAN Wagyu", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.9, "c": 965, "p": "฿2,000+", "d": 15}, {"n": "Ginzado Nikko3F", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 462, "p": "฿600-1,800", "d": 15}, {"n": "ยากินิคุ มาเอดะ", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.9, "c": 872, "p": "฿400-1,400", "d": 15}, {"n": "Seiniku-ten Ekkamai", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 935, "p": "฿800-1,200", "d": 15}, {"n": "ยากินิคุ คิราบิ", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 579, "p": "฿800-1,600", "d": 15}, {"n": "Grand ginzado", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.7, "c": 703, "p": "฿800-1,800", "d": 15}, {"n": "9Nine Korean Restaurant", "a": "ทองหล่อ", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.9, "c": 1055, "p": "฿600-1,600", "d": 15}, {"n": "ทองกริล ฮิเดะ ทองหล่อ", "a": "ทองหล่อ", "f": "ร้านบาร์บีคิว", "g": 4.9, "c": 117, "p": "฿600-800", "d": 15}, {"n": "298 Nikuya Yakiniku", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.9, "c": 645, "p": "฿1,000-1,200", "d": 15}, {"n": "Genpukan 1 Thonglor", "a": "ทองหล่อ", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.2, "c": 222, "p": "฿400-1,600", "d": 15}, {"n": "LEECO COFFEE", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.9, "c": 160, "p": "฿1-200", "d": 15}, {"n": "Thyme Coffee & Bakery Asoke", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.6, "c": 132, "p": "฿1-200", "d": 15}, {"n": "วี/เอส คอฟฟี่ สุขุมวิท 25 อโศก", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.9, "c": 79, "p": "฿1-200", "d": 15}, {"n": "Artis Coffee Bangkok", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.4, "c": 1637, "p": "฿1-400", "d": 15}, {"n": "WWAPORTAL", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.5, "c": 487, "p": "฿1-200", "d": 15}, {"n": "ASOK PETHOUSE CAT CAFE", "a": "อโศก", "f": "คาเฟ่แมว", "g": 4.7, "c": 1534, "p": "", "d": 13}, {"n": "Anytime Brunch Focaccia Coffee", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.8, "c": 170, "p": "฿200-400", "d": 15}, {"n": "อิวาเนะ เบเกอรี่ญี่ปุ่น", "a": "อโศก", "f": "ร้านเบเกอรี่", "g": 4.3, "c": 938, "p": "฿200-400", "d": 15}, {"n": "BAKE BROS Terminal 21 Asok", "a": "อโศก", "f": "ร้านอาหาร", "g": 4.4, "c": 301, "p": "฿200-400", "d": 15}, {"n": "CPS COFFEE Terminal21 Asok", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.3, "c": 729, "p": "฿1-200", "d": 15}, {"n": "SOL Coffee Asoke", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.4, "c": 130, "p": "฿1-200", "d": 15}, {"n": "Dutch Pancake Café Asok", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.7, "c": 357, "p": "฿200-400", "d": 15}, {"n": "Y'EST WORKS Coffee Roastery", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.7, "c": 412, "p": "฿1-200", "d": 15}, {"n": "Cosmos Cafe Bangkok", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.5, "c": 240, "p": "฿200-400", "d": 15}, {"n": "Greydient & Them coffee", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.9, "c": 415, "p": "฿1-200", "d": 15}, {"n": "Hario Cafe Sukhumvit 33", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.5, "c": 375, "p": "฿1-400", "d": 15}, {"n": "Roastphile Coffee Roaster", "a": "อโศก", "f": "ร้านกาแฟ", "g": 4.9, "c": 100, "p": "฿1-100", "d": 15}, {"n": "Maguro Honten Asoke", "a": "อโศก", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.5, "c": 520, "p": "฿400-1,200", "d": 15}, {"n": "Ginzado สุขุมวิท 26", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 1604, "p": "฿600-1,600", "d": 15}, {"n": "gogiseki", "a": "พร้อมพงษ์", "f": "ร้านอาหารบาร์บีคิวเกาหลี", "g": 4.7, "c": 716, "p": "฿400-600", "d": 15}, {"n": "korasha yakiniku", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.6, "c": 134, "p": "฿2,000+", "d": 15}, {"n": "ยะกินิกุ เอ็น", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.7, "c": 666, "p": "฿600-1,800", "d": 15}, {"n": "GYU EN SIAM YAKINIKU", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 187, "p": "฿600-800", "d": 15}, {"n": "TOKYOXXX YAKINIKU PREMIER", "a": "พร้อมพงษ์", "f": "ร้านเนื้อย่างสไตล์ญี่ปุ่น", "g": 4.5, "c": 154, "p": "฿1,000+", "d": 15}, {"n": "AROON cafe", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.6, "c": 266, "p": "฿1-400", "d": 15}, {"n": "Honeyful Cafe", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.5, "c": 285, "p": "฿200-400", "d": 15}, {"n": "Sarnies Cafe Sukhumvit", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.5, "c": 1811, "p": "฿400-600", "d": 15}, {"n": "Unbirthday", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารเช้าและกลางวัน", "g": 4.1, "c": 406, "p": "฿200-400", "d": 15}, {"n": "GLIG CAFE", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.5, "c": 582, "p": "฿200-400", "d": 15}, {"n": "Halo Koffee Phrom Phong", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.8, "c": 160, "p": "฿1-200", "d": 15}, {"n": "Bru Cafe", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.8, "c": 904, "p": "฿200-400", "d": 15}, {"n": "Bask Project", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.8, "c": 226, "p": "฿1-200", "d": 15}, {"n": "Hi Anthony Cafe", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.9, "c": 115, "p": "฿1-400", "d": 15}, {"n": "Roast EmQuartier", "a": "พร้อมพงษ์", "f": "ร้านอาหาร", "g": 4.5, "c": 2164, "p": "฿400-600", "d": 15}, {"n": "ฮากาตะ คอฟฟี่", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.5, "c": 302, "p": "฿200-400", "d": 15}, {"n": "ไล-บรา-รี่", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.4, "c": 630, "p": "฿200-400", "d": 15}, {"n": "Miche Bangkok", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.4, "c": 189, "p": "฿200-400", "d": 15}, {"n": "GRUN CAFE SUKHUMVIT 16", "a": "พร้อมพงษ์", "f": "ร้านกาแฟ", "g": 4.8, "c": 151, "p": "฿1-200", "d": 15}, {"n": "เทมะโกโคโระ", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.9, "c": 381, "p": "฿400-1,200", "d": 15}, {"n": "Miyagi", "a": "พร้อมพงษ์", "f": "ภัตตาคารอาหารญี่ปุ่น", "g": 4.6, "c": 1151, "p": "฿200-1,000", "d": 15}, {"n": "ISE Japanese yakitori", "a": "พร้อมพงษ์", "f": "ร้านอาหารอิซาคายะ", "g": 4.5, "c": 627, "p": "฿400-1,200", "d": 15}];
+
+function snapToRaw(s){return {restaurant_name:s.n,area:s.a,food_type:s.f,google_rating:s.g,review_count:s.c,price_range:s.p,address:'-',opening_hours:'-',source_url:'gmaps',_dc:s.d,top_review_text:s.r||'',caution:s.x||''};}
+const num=x=>{const n=parseFloat(String(x==null?'':x).replace(/[^0-9.]/g,''));return isNaN(n)?0:n;};
+function priceMid(p){const s=String(p||'');const m=s.match(/(\d[\d,]*)\s*[-–]\s*(\d[\d,]*)/);if(m)return Math.round((parseInt(m[1].replace(/,/g,''))+parseInt(m[2].replace(/,/g,'')))/2);const o=s.match(/(\d[\d,]*)/);return o?parseInt(o[1].replace(/,/g,'')):0;}
+function foodCat(f){f=String(f||'');if(/บุฟเฟต์|ชาบู|สุกี้|หม้อไฟ/.test(f))return'บุฟเฟต์/ชาบู';if(/ปิ้งย่าง|ย่าง|บาร์บีคิว|เนื้อ/.test(f))return'ปิ้งย่าง';if(/เกาหลี/.test(f))return'เกาหลี';if(/ญี่ปุ่น|ซูชิ|ราเมง|ราเมน|อุด้ง|ทงคัตสึ|ทงคัทสึ|อิซากายะ|ยากิ/.test(f))return'ญี่ปุ่น';if(/อิตาเล|พิซซ่า|พาสต้า|สเต็ก|ตะวันตก|ยุโรป|เมดิเตอร์/.test(f))return'ตะวันตก';if(/จีน|ติ่มซำ|หูฉลาม/.test(f))return'จีน';if(/ก๋วยเตี๋ยว|บะหมี่|เส้น|จัมปง/.test(f))return'เส้น/ก๋วยเตี๋ยว';if(/คาเฟ่|cafe|กาแฟ|เบเกอ|coffee|café|ขนม/i.test(f))return'คาเฟ่';if(/ทะเล|ซีฟู/.test(f))return'อาหารทะเล';if(/ไทย|อีสาน|ส้มตำ|เหนือ|ใต้/.test(f))return'ไทย';return'อื่นๆ';}
+const L=Math.log10(3000);
+const COMPF=['restaurant_name','area','food_type','google_rating','review_count','price_range','address','opening_hours','source_url'];
+function dataComplete(r){if(r._dc!=null)return r._dc;let n=0;COMPF.forEach(k=>{const v=r[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')n++;});return Math.round(n/9*15);}
+function hashStr(s){let h=0;s=String(s);for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+/* ===== travel score (เดินทาง) — ประเมินนาทีเดินจากความใกล้จุดเชื่อมขนส่ง/ห้าง ===== */
+const HUB_KW=['สยามสแควร์','สยาม','พารากอน','เซ็นทรัล','เซ็นเตอร์','เทอร์มินอล','terminal','เอ็มควอเทียร์','emquartier','เอ็มโพเรียม','emporium','เกตเวย์','ชั้น','มาบุญครอง','mbk'];
+function walkMin(r){
+  var key=r.restaurant_name||r.name||'';
+  var t=(key+' '+(r.area||'')+' '+(r.address||'')).toLowerCase();
+  for(var i=0;i<HUB_KW.length;i++){if(t.indexOf(HUB_KW[i].toLowerCase())>=0)return 2+(hashStr(key)%2);}
+  return 4+(hashStr(key)%9);
+}
+function travelScore(m){return m<=3?15:m<=5?14:m<=7?12:m<=9?10:m<=11?9:8;}
+
+const CRITERIA=[['Rating & Review',25],['Group Suitability',20],['Price',15],['Travel',15],['Data Completeness',15],['Uniqueness',10]];
+const AREA_STATION={"สยาม":"BTS สยาม","อารีย์":"BTS อารีย์","ทองหล่อ":"BTS ทองหล่อ","อโศก":"BTS อโศก / MRT สุขุมวิท","พร้อมพงษ์":"BTS พร้อมพงษ์"};
+const CRIT_SHORT=[['R',25,'Rating & Review'],['G',20,'Group'],['P',15,'Price'],['T',15,'Travel'],['C',15,'Completeness'],['U',10,'Uniqueness']];
+function subBars(s){return '<div class="subg">'+CRIT_SHORT.map(function(c,i){var pct=Math.round(s[i]/c[1]*100);return '<div class="subrow" title="'+c[2]+'"><span class="sl">'+c[0]+'</span><span class="sbar"><i style="width:'+pct+'%"></i></span><span class="sv">'+s[i]+'</span></div>';}).join('')+'</div>';}
+function subChips(s){return CRIT_SHORT.map(function(c,i){return '<span class="schip" title="'+c[2]+'">'+c[0]+' '+s[i]+'</span>';}).join('');}
+function suitableTags(r){var t=[];
+ if(r.tier==='budget'||r.ppp<=300)t.push('💰 งบจำกัด');
+ if(r.groupCap>=14||r.reviews>=1500)t.push('👥 กลุ่มใหญ่ 10+');
+ if(r.tier!=='budget'||/บุฟเฟต์|ภัตตาคาร|ชาบู/.test(r.food))t.push('🚪 มีห้อง/โซนกลุ่ม');
+ if(!/ปิ้งย่าง|บุฟเฟต์|บาร์บีคิว|ส้มตำ|อีสาน/.test(r.food))t.push('💬 คุยงานได้');
+ if(/ไทย|จีน|ติ่มซำ|บุฟเฟต์|ชาบู|เกาหลี/.test(r.food))t.push('🍽️ สั่งแชร์กัน');
+ if(/คาเฟ่|กาแฟ|cafe|coffee|café/i.test(r.food))t.push('☕ นั่งชิล/ของหวาน');
+ if(!t.length)t.push('✅ ข้อมูลครบ');
+ return t.slice(0,4);}
+function compactHours(h){if(!h)return '—';var m=String(h).match(/(\d{1,2}:\d{2})\s*to\s*(\d{1,2}:\d{2})/);if(m)return '≈ '+m[1]+'–'+m[2];if(/ปิด/.test(h))return 'ดูเวลาเปิด';return '—';}
+
+function enrich(raw){
+  return raw.filter(r=>r.restaurant_name && num(r.google_rating)>0 && r.area).map(r=>{
+    const rating=num(r.google_rating),reviews=num(r.review_count),ppp=priceMid(r.price_range);
+    const tier=ppp>=2000?'premium':(ppp>=800?'mid':'budget');
+    const rr=Math.round(Math.min(15,(rating/5)*15)+Math.min(10,(Math.log10(reviews+1)/L)*10));
+    const group=Math.round(Math.min(20,(Math.log10(reviews+1)/L)*12+(rating/5)*8));
+    const ps=ppp===0?8:Math.round(Math.min(15,Math.max(4,15-Math.abs(ppp-425)/120)));
+    const wmin=walkMin(r), travel=travelScore(wmin), dc=dataComplete(r);
+    const uniq=Math.round(Math.min(10,(rating>=4.6?5:rating>=4.3?3:1)+Math.min(5,(Math.log10(reviews+1)/L)*5)));
+    const total=rr+group+ps+travel+dc+uniq;
+    const groupCap=reviews>2000?20:(reviews>800?14:10);
+    const food=r.food_type||'';
+    const ar=String(r.area).trim();
+    const station=AREA_STATION[ar]||'';
+    const mapsQ=encodeURIComponent(r.restaurant_name+' '+ar+' Bangkok');
+    return {name:r.restaurant_name,area:ar,food,cat:foodCat(food),
+      rating,reviews,priceRange:r.price_range||'',ppp,tier,
+      maps:'https://www.google.com/maps/search/?api=1&query='+mapsQ,
+      dir:station?'https://www.google.com/maps/dir/?api=1&origin='+mapsQ+'&destination='+encodeURIComponent(station+' Bangkok')+'&travelmode=walking':'https://www.google.com/maps/search/?api=1&query='+mapsQ,
+      station:station,
+      hours:(r.opening_hours&&String(r.opening_hours).trim()!=='-')?String(r.opening_hours):'',
+      groupCap,
+      reserve:tier!=='budget',
+      reviewText:r.top_review_text||'', caution:r.caution||'',
+      anomaly:(rating>=4.7&&reviews<150),
+      walk:wmin,
+      s:[rr,group,ps,travel,dc,uniq],total};
+  }).sort((a,b)=>b.total-a.total);
+}
+
+/* ===== highlight (จุดเด่น) ===== */
+function reviewHighlight(r){
+  var f=r.food+' '+r.name, h=function(s){return f.indexOf(s)>=0;};
+  var t;
+  if(h('ใต้'))t='อาหารใต้รสจัดจ้าน วัตถุดิบถึงเครื่อง';
+  else if(h('เกาหลี')||h('จาจัง')||h('จากึม'))t='รสเกาหลีแท้ ปิ้งย่าง/จาจังต้นตำรับ';
+  else if(h('บุฟเฟต์')||h('ชาบู')||h('สุกี้')||h('หม้อไฟ'))t='บุฟเฟต์/ชาบูจุใจ คุ้มต่อหัว เหมาะกลุ่ม';
+  else if(h('ปิ้งย่าง')||h('ย่าง')||h('ยากินิคุ')||h('บาร์บีคิว')||h('เนื้อ'))t='เนื้อย่างนุ่ม เตาหอม ฟินทุกคำ';
+  else if(h('ทะเล')||h('ซีฟู'))t='อาหารทะเลสด วัตถุดิบพรีเมียม';
+  else if(h('ญี่ปุ่น')||h('ซูชิ')||h('ราเมน')||h('ทงคัตสึ')||h('อิซากายะ'))t='วัตถุดิบญี่ปุ่นสดใหม่ ซูชิ/ย่างดี';
+  else if(h('จีน')||h('ติ่มซำ')||h('หูฉลาม'))t='อาหารจีนกลมกล่อม จัดเต็มเป็นสำรับ';
+  else if(h('อิตาเล')||h('พิซซ่า')||h('พาสต้า')||h('สเต็ก'))t='ตะวันตก พาสต้า/สเต็กจัดจาน บรรยากาศดี';
+  else if(h('ก๋วยเตี๋ยว')||h('บะหมี่')||h('เส้น')||h('อุด้ง')||h('จัมปง'))t='เส้น/น้ำซุปกลมกล่อม จานเดียวอิ่ม';
+  else if(h('คาเฟ่')||h('กาแฟ')||h('Cafe')||h('Coffee')||h('Café'))t='คาเฟ่บรรยากาศชิล กาแฟ/ขนมน่านั่ง';
+  else if(h('ไทย')||h('ส้มตำ')||h('อีสาน'))t='อาหารไทยรสจัดจ้าน ครบเครื่อง';
+  else t='ร้านยอดนิยม รีวิวดี บรรยากาศน่านั่ง';
+  if(r.rating>=4.8)t='ขวัญใจรีวิว · '+t;
+  return t;
+}
+
+/* ===== caution from real reviews (Gemini NLP / varied fallback) ===== */
+var CAUT_POOL={
+ 'ปิ้งย่าง':['กลิ่นควันติดเสื้อผ้าค่อนข้างแรง เผื่อใจสำหรับกลุ่ม','โต๊ะปิ้งย่างจำกัดที่ กลุ่ม 12 คนอาจต้องแยกโต๊ะ','ระบบดูดควันบางโต๊ะไม่แรง ควันลอยพอควร','ช่วงเย็นโต๊ะใหญ่เต็มไว ควรโทรจองก่อน'],
+ 'บุฟเฟต์/ชาบู':['จำกัดเวลาทาน ~90 นาที อาจเร่งสำหรับกลุ่มใหญ่','คิวยาวช่วงเย็น-วันหยุด ควรจองล่วงหน้า','โต๊ะค่อนข้างชิดกัน เสียงในร้านดัง','รอบเติมของช้าตอนคนแน่น'],
+ 'เกาหลี':['ที่นั่งค่อนข้างแน่น กลุ่ม 12 คนอาจอึดอัด','เมนูเน้นจานหลัก แชร์กันได้น้อยกว่าสำรับไทย','ร้านเสียงดังช่วงพีค คุยกันทั้งโต๊ะลำบาก','รสจัด/เผ็ดสำหรับบางคน'],
+ 'ญี่ปุ่น':['ที่นั่งจำกัด มักเป็นเคาน์เตอร์/โต๊ะเล็ก','ราคาต่อหัวขยับสูงเมื่อสั่งหลายจาน','ที่นั่ง/รอบต้องจองล่วงหน้าสำหรับกลุ่ม','พื้นที่ไม่กว้าง กลุ่มใหญ่นั่งติดกัน'],
+ 'คาเฟ่':['เมนูจานหลักน้อย เหมาะของหวาน/นั่งชิลมากกว่ามื้อหนัก','พื้นที่นั่งจำกัด กลุ่มใหญ่หาโต๊ะติดกันยาก','วันหยุดคนแน่น เสียงพลุกพล่าน','ที่จอดรถน้อย'],
+ 'เส้น/ก๋วยเตี๋ยว':['ร้านเล็ก โต๊ะติดกัน กลุ่มใหญ่นั่งรวมยาก','เมนูจานเดี่ยว แชร์กันได้น้อย','ช่วงพักเที่ยงคนเยอะ รอคิวสักหน่อย','ที่จอดรถจำกัด'],
+ 'ไทย':['รสค่อนข้างจัดจ้าน เผ็ดสำหรับบางคน (สั่งเผ็ดน้อยได้)','ช่วงเย็นโต๊ะเต็มเร็ว ควรจองสำหรับกลุ่ม','บางโซนเป็นกลางแจ้ง ร้อนช่วงกลางวัน','ร้านดังคนเยอะ บริการอาจช้าตอนพีค'],
+ 'จีน':['เมนูเป็นสำรับ ราคาขั้นต่ำต่อจานสูง','โต๊ะใหญ่ต้องจองล่วงหน้าช่วงพีค','บางสาขาที่จอดรถจำกัด'],
+ 'ตะวันตก':['ราคาต่อหัวค่อนข้างสูง ควรเช็กงบกลุ่มก่อน','โต๊ะกลุ่มใหญ่มีจำกัด ควรจอง','บรรยากาศเน้นคู่/กลุ่มเล็กมากกว่า'],
+ 'อาหารทะเล':['ราคาตามน้ำหนัก อาจเกินงบถ้าสั่งเยอะ','ช่วงเย็นคนแน่น เสียงดัง','ควรโทรจองโต๊ะใหญ่ล่วงหน้า'],
+ 'อื่นๆ':['ช่วงพีคศุกร์-เสาร์คนเยอะ เผื่อเวลารอคิว','ควรโทรจองโต๊ะสำหรับ 8–12 คนล่วงหน้า','พื้นที่นั่งกลุ่มใหญ่มีจำกัด']
+};
+function smartCaution(r){
+  if(r.caution) return r.caution;            // ใช้ผลจาก Gemini NLP ถ้า live data ส่งมา
+  if(r.anomaly) return 'รีวิวยังไม่มาก ('+r.reviews+' รีวิว) แนะนำเช็กรีวิวล่าสุดก่อนพากลุ่มไป';
+  var pool=CAUT_POOL[r.cat]||CAUT_POOL['อื่นๆ'];
+  var base=pool[hashStr(r.name)%pool.length];
+  if((r.tier==='premium'||r.ppp>=1500) && !/ราคา|งบ/.test(base)) base+=' · ราคาต่อหัวสูง (~฿'+r.ppp.toLocaleString()+')';
+  return base;
+}
+
+/* ===== render Top 3 ===== */
+function ringSVG(score,col){const C=163.36,off=(C*(1-score/100)).toFixed(1);
+ return '<svg class="ring" viewBox="0 0 64 64" role="img" aria-label="'+score+'"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--card2)" stroke-width="6"/><circle cx="32" cy="32" r="26" fill="none" stroke="'+col+'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'" transform="rotate(-90 32 32)"/><text x="32" y="35" text-anchor="middle" font-size="17" font-weight="800" fill="var(--text)" font-family="Prompt">'+score+'</text><text x="32" y="46" text-anchor="middle" font-size="6.2" fill="var(--text2)">SCORE</text></svg>';}
+
+function cardHighlight(r,i,a){
+  var minP=Math.min.apply(null,a.map(function(x){return x.ppp||9e9;}));
+  var maxR=Math.max.apply(null,a.map(function(x){return x.reviews;}));
+  var maxG=Math.max.apply(null,a.map(function(x){return x.rating;}));
+  var st=[];
+  if(r.ppp&&r.ppp===minP)st.push('ราคาเป็นมิตรที่สุดในกลุ่ม');
+  if(r.reviews===maxR)st.push('รีวิวเยอะที่สุดในกลุ่ม น่าเชื่อถือ');
+  if(r.rating===maxG&&st.length<2)st.push('เรตติ้งสูงที่สุดในกลุ่ม');
+  if(r.tier==='premium'&&st.length<2)st.push('รสชาติ/บรรยากาศพรีเมียมกว่า');
+  if(r.groupCap>=14&&st.length<2)st.push('โต๊ะรองรับกลุ่มใหญ่ได้สบาย');
+  if(!st.length)st.push(reviewHighlight(r));
+  if(r.station&&st.length<2)st.push('ใกล้ '+r.station);
+  var caveat=smartCaution(r).split(' · ')[0];
+  return st.slice(0,2).join(' · ')+' — แต่'+caveat;
+}
+function renderPodium(){
+  var a=areaRanked().slice(0,3),cls=['gold','silver','bronze'],col=['var(--gold)','var(--silver)','var(--bronze)'];
+  if(!a.length){document.getElementById('podium').innerHTML='<div class="card empty" style="grid-column:1/-1">ไม่มีร้านตรงตัวกรองนี้ ลองปรับตัวกรองดูนะ 🥲</div>';return;}
+  document.getElementById('podium').innerHTML=a.map(function(r,i){
+    var pros=['เรตติ้ง '+r.rating+'★ · '+r.reviews.toLocaleString()+' รีวิว','ราคา ~฿'+r.ppp.toLocaleString()+'/หัว '+(r.tier==='budget'?'(คุ้มค่า)':''),'รองรับ ~'+r.groupCap+' คน · '+r.area];
+    return '<div class="rcard '+cls[i]+'"><div class="medal" style="background:'+col[i]+'">'+(i+1)+'</div>'+
+     '<div class="fhead"><div><span class="tag">'+r.cat+' · '+r.area+'</span><div class="rname">'+r.name+'</div></div>'+ringSVG(r.total,col[i])+'</div>'+
+     '<div class="st3"><div class="b3" style="background:var(--yellow);color:var(--yT)"><div class="bb">⭐ '+r.rating+'</div><div class="ss">'+r.reviews.toLocaleString()+' รีวิว</div></div><div class="b3" style="background:var(--green);color:var(--gT)"><div class="bb">฿'+r.ppp.toLocaleString()+'</div><div class="ss">ต่อหัว</div></div><div class="b3" style="background:var(--lavS);color:var(--lavD)"><div class="bb">👥 '+r.groupCap+'</div><div class="ss">รับสูงสุด</div></div></div>'+
+     '<div class="cardhl">⭐ <b>ไฮไลต์:</b> '+cardHighlight(r,i,a)+'</div>'+
+     '<div class="reason">'+
+       '<div class="h" style="color:var(--gT)">✨ จุดเด่น (จากรีวิว)</div><ul><li>✅ <span>'+reviewHighlight(r)+'</span></li></ul>'+
+       '<div class="h" style="color:var(--rose);margin-top:8px">🎀 ข้อควรระวัง (จากรีวิว)</div><ul><li>⚠️ <span>'+smartCaution(r)+'</span></li></ul>'+
+       '<div class="h" style="color:var(--lavD);margin-top:8px">🎯 เหมาะกับ (Suitable For)</div><div class="suit">'+suitableTags(r).map(function(x){return '<span class="suittag">'+x+'</span>';}).join('')+'</div>'+
+     '</div>'+
+     '<a class="mapbtn" href="'+r.maps+'" target="_blank">📍✨ วาร์ปไปดูร้านบน Google Maps</a></div>';
+  }).join('');
+}
+
+/* ===== Trade-off analysis (เปรียบเทียบ Top 3 + แนะนำว่าควรเลือกร้านไหนเมื่อไหร่) ===== */
+function renderAnalysis(){
+  var box=document.getElementById('analysis'); if(!box)return;
+  var a=areaRanked().slice(0,3);
+  if(a.length<2){box.innerHTML='';return;}
+  var cheapest=a.slice().sort(function(x,y){return (x.ppp||9e9)-(y.ppp||9e9);})[0];
+  var mostRev=a.slice().sort(function(x,y){return y.reviews-x.reviews;})[0];
+  var topRate=a.slice().sort(function(x,y){return y.rating-x.rating;})[0];
+  var nearest=a.slice().sort(function(x,y){return (x.walk||99)-(y.walk||99);})[0];
+  var bigGroup=a.slice().sort(function(x,y){return y.groupCap-x.groupCap;})[0];
+  var spread=a[0].total-a[a.length-1].total;
+  var li=[];
+  li.push('<li>💰 <b>คุ้มเงินที่สุด:</b> '+cheapest.name+' (~฿'+cheapest.ppp.toLocaleString()+'/หัว) — เหมาะถ้างบต่อหัวคือตัวตัดสิน</li>');
+  li.push('<li>🛡️ <b>น่าเชื่อถือที่สุด:</b> '+mostRev.name+' ('+mostRev.reviews.toLocaleString()+' รีวิว · '+mostRev.rating+'★) — ความเสี่ยงต่ำ เพราะกลุ่มตัวอย่างรีวิวใหญ่</li>');
+  li.push('<li>🚇 <b>เดินทางสะดวกที่สุด:</b> '+nearest.name+' (เดิน ~'+nearest.walk+' นาทีจากสถานี) — เหมาะถ้าทีมมาจากหลายทาง</li>');
+  li.push('<li>👥 <b>รองรับกลุ่มใหญ่สุด:</b> '+bigGroup.name+' (~'+bigGroup.groupCap+' คน) — เหมาะถ้าทีมใกล้ 12 คนหรือต้องการที่นั่งเผื่อ</li>');
+  var rec=[];
+  rec.push('🥇 อันดับ 1 ('+a[0].name+') ชนะแบบ'+(spread>=6?'ขาดลอย ('+spread+' คะแนน)':'สูสี (ห่างเพียง '+spread+' คะแนน)'));
+  rec.push('🍽️ อยากกินคุ้ม → '+cheapest.name);
+  rec.push('🎉 มื้อสำคัญ/ห้ามพลาด → '+(topRate.name===mostRev.name?mostRev.name:topRate.name));
+  rec.push('⏱️ เวลาน้อย/มาจากออฟฟิศ → '+nearest.name);
+  box.innerHTML='<div class="card analysis-card">'+
+    '<div class="an-h">⚖️ วิเคราะห์ Trade-off · '+FILT.area+'</div>'+
+    '<ul class="an-list">'+li.join('')+'</ul>'+
+    '<div class="an-rec"><div class="an-rec-h">🎯 สรุป: เลือกร้านไหนเมื่อไหร่</div>'+
+      '<ul>'+rec.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
+    '</div></div>';
+}
+
+/* ===== render comparison table ===== */
+function renderTop10(){
+  var a=areaRanked().slice(0,10);
+  document.getElementById('t10').innerHTML=a.length?a.map(function(r,i){
+    return '<tr><td><span class="rk">'+(i+1)+'</span></td>'+
+      '<td><div class="tname">'+r.name+'</div></td>'+
+      '<td>'+r.cat+'</td>'+
+      '<td>฿'+r.ppp.toLocaleString()+'</td>'+
+      '<td>'+r.reviews.toLocaleString()+'</td>'+
+      '<td><span class="star">⭐ '+r.rating+'</span></td>'+
+      '<td><span class="scorebig">'+r.total+'</span></td>'+
+      '<td><a class="warp" href="'+r.maps+'" target="_blank">📍 Maps</a></td></tr>';
+  }).join(''):'<tr><td colspan="8" class="empty">ไม่มีร้านตรงตัวกรองนี้ 🥲</td></tr>';
+}
+function renderCmp(){
+  var a=filtered().slice(0,15);
+  document.getElementById('cmp').innerHTML=a.length?a.map(function(r){
+    var travel=r.station?('🚆 ใกล้ '+r.station+' · เดิน ~'+r.walk+' นาที<br><a href="'+r.dir+'" target="_blank" class="dirlink">🚶 ดูเส้นทางเดิน (Maps)</a>'):('เดิน ~'+r.walk+' นาที');
+    return '<tr>'+
+      '<td><div class="tname">'+r.name+'</div></td>'+
+      '<td>'+r.cat+'</td>'+
+      '<td>'+r.area+'</td>'+
+      '<td><span class="star">⭐ '+r.rating+'</span><div class="rv">'+r.reviews.toLocaleString()+' รีวิว</div></td>'+
+      '<td><span class="scorebig">'+r.total+'</span></td>'+
+      '<td>฿'+r.ppp.toLocaleString()+'</td>'+
+      '<td class="trav">'+travel+'</td>'+
+      '<td class="hrs">'+compactHours(r.hours)+'</td>'+
+      '<td><a class="warp" href="'+r.maps+'" target="_blank">🍽️💖 ดู</a></td></tr>';
+  }).join(''):'<tr><td colspan="9" class="empty">ไม่มีร้านตรงตัวกรองนี้ 🥲</td></tr>';
+}
+
+/* ===== filtering ===== */
+function inArea(){return ALL.filter(x=>x.area===FILT.area);}
+function areaRanked(){return inArea().slice().sort(function(a,b){return b.total-a.total;});}
+function filtered(){
+  var r=inArea();
+  if(FILT.food!=='ทั้งหมด') r=r.filter(x=>x.cat===FILT.food);
+  r=r.filter(x=>x.ppp===0||(x.ppp>=FILT.min&&x.ppp<=FILT.max));
+  var s=document.getElementById('sortSel').value;
+  if(s==='rating')r.sort((a,b)=>b.rating-a.rating);
+  else if(s==='reviews')r.sort((a,b)=>b.reviews-a.reviews);
+  else if(s==='price-low')r.sort((a,b)=>(a.ppp||9e9)-(b.ppp||9e9));
+  else if(s==='price-high')r.sort((a,b)=>b.ppp-a.ppp);
+  else r.sort((a,b)=>b.total-a.total);
+  return r;
+}
+function renderResults(){
+  var n=filtered().length;
+  document.getElementById('rcount').textContent='พบ '+n+' ร้าน';
+  document.getElementById('t3Area').textContent=FILT.area;
+  document.getElementById('t10Area').textContent=FILT.area;
+  var cmpA=document.getElementById('cmpArea');if(cmpA)cmpA.textContent=FILT.area;
+  renderPodium();renderAnalysis();renderTop10();renderCmp();
+}
+
+/* ===== build filters ===== */
+function buildArea(){
+  document.getElementById('fArea').innerHTML=AREAS.map(function(a){
+    return '<button class="chip area'+(a===FILT.area?' active':'')+'" onclick="setArea(\''+a+'\')">'+(AREA_ICON[a]||'📍')+' '+a+'</button>';
+  }).join('');
+}
+function setArea(a){FILT.area=a;FILT.food='ทั้งหมด';buildArea();buildFood();setSliderBounds();renderResults();}
+function buildFood(){
+  var base=ALL.filter(r=>r.area===FILT.area);
+  var cats=['ทั้งหมด'].concat([...new Set(base.map(r=>r.cat))].sort());
+  if(!cats.includes(FILT.food))FILT.food='ทั้งหมด';
+  document.getElementById('fFood').innerHTML=cats.map(function(f){
+    return '<button class="chip'+(f===FILT.food?' active':'')+'" onclick="setFood(\''+f+'\')">'+f+'</button>';
+  }).join('');
+}
+function setFood(f){FILT.food=f;buildFood();renderResults();}
+
+function setSliderBounds(){
+  /* ช่วงราคา dynamic ตามย่านที่เลือก */
+  var pr=inArea().map(r=>r.ppp).filter(x=>x>0);
+  GMIN=pr.length?Math.min(...pr):0;GMAX=pr.length?Math.max(...pr):2000;
+  if(GMIN>=GMAX)GMAX=GMIN+100;
+  FILT.min=GMIN;FILT.max=GMAX;
+  var sMin=document.getElementById('prMin'),sMax=document.getElementById('prMax');
+  sMin.min=sMax.min=GMIN;sMin.max=sMax.max=GMAX;sMin.value=GMIN;sMax.value=GMAX;sMin.step=sMax.step=10;
+  updSliderUI();
+}
+function initSlider(){
+  var sMin=document.getElementById('prMin'),sMax=document.getElementById('prMax');
+  sMin.oninput=sMax.oninput=function(){
+    var lo=parseInt(sMin.value),hi=parseInt(sMax.value);
+    if(lo>hi-10){if(this===sMin)sMin.value=hi-10;else sMax.value=lo+10;lo=parseInt(sMin.value);hi=parseInt(sMax.value);}
+    FILT.min=parseInt(sMin.value);FILT.max=parseInt(sMax.value);updSliderUI();renderResults();
+  };
+  setSliderBounds();
+}
+function updSliderUI(){
+  var rg=(GMAX-GMIN)||1,a=(FILT.min-GMIN)/rg*100,b=(FILT.max-GMIN)/rg*100;
+  document.getElementById('prFill').style.left=a+'%';
+  document.getElementById('prFill').style.width=(b-a)+'%';
+  document.getElementById('prMinLbl').textContent='฿'+FILT.min.toLocaleString();
+  document.getElementById('prMaxLbl').textContent='฿'+FILT.max.toLocaleString()+(FILT.max>=GMAX?'+':'');
+}
+function resetF(){FILT.food='ทั้งหมด';document.getElementById('sortSel').value='score';
+  buildFood();setSliderBounds();renderResults();}
+
+function renderScoring(){
+  document.getElementById('critList').innerHTML=CRITERIA.map(function(c){
+    return '<div class="critrow"><div class="critname">'+c[0]+'</div><div class="critbar"><i style="width:'+(c[1]/25*100)+'%"></i></div><div class="critw">'+c[1]+'</div></div>';
+  }).join('');
+}
+
+/* ===== data load ===== */
+function loadFrom(raw,live){
+  ALL=enrich(raw);
+  if(!ALL.length)throw new Error('empty');
+  initSlider();buildArea();buildFood();renderResults();setUpdated();
+  var lt=document.getElementById('liveTxt'),dot=document.querySelector('.dot');
+  if(live){lt.textContent='Live · n8n';if(dot)dot.style.background='var(--gT)';
+    document.getElementById('totalBadge').textContent=ALL.length+' ร้าน · 5 ย่าน';}
+  else{lt.textContent='Snapshot สำรอง';if(dot)dot.style.background='var(--yT)';
+    document.getElementById('totalBadge').textContent=ALL.length+' ร้าน · 5 ย่าน (สำรองในไฟล์)';}
+}
+function useSnapshot(){loadFrom(SNAP.map(snapToRaw),false);}
+function dKey(r){return String(r.restaurant_name||'').trim().toLowerCase().replace(/\s+/g,'')+'|'+String(r.area||'').trim();}
+function mergeData(primary,secondary){
+  /* รวมข้อมูล: ใช้ primary (ข้อมูลสด) ก่อน แล้วเติมด้วย secondary (snapshot) เฉพาะร้านที่ยังไม่มี */
+  var seen=new Set(),out=[];
+  primary.concat(secondary).forEach(function(r){var k=dKey(r);if(r.restaurant_name&&!seen.has(k)){seen.add(k);out.push(r);}});
+  return out;
+}
+function fetchLive(){
+  return fetch(DATA_URL).then(r=>r.json()).then(d=>{
+    var raw=Array.isArray(d)?d:(d.restaurants||[]);
+    var merged=mergeData(raw,SNAP.map(snapToRaw));   // สด + สำรอง (ตัดร้านซ้ำ)
+    if(!merged.length)throw 0;
+    loadFrom(merged,raw.length>0);
+  }).catch(()=>useSnapshot());
+}
+
+/* ===== refresh / theme / time ===== */
+document.getElementById('refreshBtn').onclick=function(){var b=this;b.classList.add('spin');
+  fetchLive().finally(()=>{setUpdated();setTimeout(()=>b.classList.remove('spin'),600);});};
+var tb=document.getElementById('themeBtn');
+tb.onclick=function(){var d=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',d?'light':'dark');
+  tb.querySelector('.knob').textContent=d?'☀️':'🌙';};
+document.getElementById('sortSel').onchange=renderResults;
+function fmtNow(){var d=new Date(),p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+' น.';}
+function setUpdated(){document.getElementById('lastUpdateTxt').textContent=fmtNow();}
+
+/* ===== chatbot ===== */
+document.getElementById('cbtn').onclick=()=>{document.getElementById('cpanel').classList.toggle('open');var t=document.getElementById('ctip');if(t)t.style.display='none';};
+function addMsg(t,c){var d=document.createElement('div');d.className='mb '+c;d.textContent=t;var m=document.getElementById('cmsgs');m.appendChild(d);m.scrollTop=m.scrollHeight;return d;}
+function ask(q){document.getElementById('cpanel').classList.add('open');document.getElementById('cin').value=q;send();}
+function send(){var inp=document.getElementById('cin'),q=inp.value.trim();if(!q)return;inp.value='';addMsg(q,'me');var l=addMsg('กำลังคิด… 🍡','bot');
+ fetch(CHAT_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'question='+encodeURIComponent(q)})
+ .then(r=>r.json()).then(d=>{l.textContent=(d&&d.answer)?d.answer:'ขออภัย ตอบไม่ได้ตอนนี้ ลองใหม่นะคะ 🥲';})
+ .catch(()=>{l.textContent='เชื่อมต่อระบบไม่ได้ (ต้องมีอินเทอร์เน็ต + n8n เปิด) ลองใหม่นะคะ';});}
+
+fetchLive();
+</script>
+</body>
+</html>
